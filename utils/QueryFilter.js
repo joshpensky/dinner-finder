@@ -9,7 +9,7 @@ class QueryFilter {
     if (this.queryItems.length === 0) return refs;
     let newRefs = [];
     this.queryItems.forEach(item => {
-      refs.forEach(ref => newRefs.push(this.filter(ref, item)));
+      if (item.trim().length > 0) refs.forEach(ref => newRefs.push(this.filter(ref, item)));
     });
     return newRefs;
   }

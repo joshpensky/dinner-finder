@@ -1,25 +1,22 @@
 const QueryFilter = require('../utils/QueryFilter');
+const { Restaurant } = require('../serializers');
 
 module.exports = (app, uri, db, middleware) => {
-  // MARK: - restaurant list
+  // MARK: - GET restaurant list
   app.get(uri, middleware, (req, res) => {
     let { users, cuisines } = req.query;
-    let dbRefs = [db.collection('restaurants')];
+    let dbRefs = [db.collection('restaurants').orderBy("name")];
     [
       new QueryFilter(users, (ref, user) => ref.where('user', '==', db.doc(`users/${user}`))),
       new QueryFilter(cuisines, (ref, cuisine) => ref.where(`cuisines.${cuisine}`, '==', true)),
     ].forEach(queryFilter => dbRefs = queryFilter.applyTo(dbRefs));
     Promise.all(dbRefs.map(ref => ref.get()))
-      .then(snapshots => {
+      .then(queries => {
         var restaurants = {}
-        snapshots.forEach(snapshot => {
+        queries.forEach(snapshot => {
           snapshot.forEach(doc => {
-            var { user, cuisines, ...restDoc } = doc.data();
-            restaurants[doc.id] = Object.assign({
-              id: doc.id,
-              user: `${user._referencePath.segments.slice(-1)[0]}`,
-              cuisines: Object.keys(cuisines),
-            }, restDoc);
+            var restaurant = Restaurant.serialize(doc);
+            restaurants[restaurant.id] = restaurant;
           })
         })
         res.send(Object.values(restaurants));
@@ -29,20 +26,16 @@ module.exports = (app, uri, db, middleware) => {
       });
   });
 
-  // MARK: - restaurant detail
+  // MARK: - GET restaurant detail
   app.get(`${uri}/:restaurantId`, middleware, (req, res) => {
     let restaurantsRef = db.collection('restaurants').doc(req.params.restaurantId);
     restaurantsRef.get()
       .then(doc => {
         if (!doc.exists) {
-          res.status(404).send('Restaurant does not exist');
+          res.status(404).send('Restaurant not found');
         } else {
-          const { user, cuisines, ...restDoc } = doc.data()
-          res.send(Object.assign({
-            id: doc.id,
-            user: `${user._referencePath.segments.slice(-1)[0]}`,
-            cuisines: Object.keys(cuisines),
-          }, restDoc));
+          var restaurant = Restaurant.serialize(doc);
+          res.send(restaurant);
         }
       })
       .catch(err => {

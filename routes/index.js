@@ -1,20 +1,23 @@
 const admin = require('firebase-admin');
-var serviceAccount = require('../serviceAccountKey.json');
+const serviceAccount = require('../serviceAccountKey.json');
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
-var db = admin.firestore();
+
+const db = admin.firestore();
+
+const { User } = require('../serializers');
 
 const initMiddleware = app => {
-  const usersMiddleware = (req, res, next) => {
+  const users = (req, res, next) => {
     if (app.locals.users) return next();
     db.collection('users').get()
       .then(snapshot => {
         app.locals.users = {};
         snapshot.forEach(doc => {
-          app.locals.users[doc.id] = Object.assign({
-            id: doc.id,
-          }, doc.data());
+          const user = User.serialize(doc);
+          app.locals.users[user.id] = user;
         });
         next();
       })
@@ -24,8 +27,10 @@ const initMiddleware = app => {
       });
   };
 
-  return [usersMiddleware];
-}
+  return [
+    users,
+  ];
+};
 
 module.exports = app => {
   const baseUrl = '/api/v1';

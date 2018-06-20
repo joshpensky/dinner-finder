@@ -1,5 +1,5 @@
 module.exports = (app, uri, db, middleware) => {
-  // MARK: - cuisine list
+  // MARK: - GET cuisine list
   app.get(uri, middleware, (req, res) => {
     let restaurantsRef = db.collection('restaurants');
     restaurantsRef.get()

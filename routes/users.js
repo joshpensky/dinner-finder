@@ -1,24 +1,25 @@
+const { Restaurant } = require('../serializers');
+
 module.exports = (app, uri, db, middleware) => {
-  // MARK: - users list
+  // MARK: - GET user list
   app.get(uri, middleware, (req, res) => {
     res.send(Object.values(app.locals.users));
   });
 
-  // MARK: - user detail
+  // MARK: - GET user detail
   app.get(`${uri}/:userId`, middleware, (req, res) => {
-    const userId = req.params.userId;
-    if (app.locals.users[userId]) {
+    const { userId } = req.params;
+    const user = app.locals.users[userId];
+    if (user) {
       const restaurantsRef = db.collection('restaurants').where('user', '==', db.doc(`users/${userId}`));
       restaurantsRef.get()
         .then(snapshot => {
           let restaurants = {}
           snapshot.forEach(doc => {
-            var { user, ...restDoc } = doc.data();
-            restaurants[doc.id] = Object.assign({
-              id: doc.id,
-            }, restDoc);
+            var { user, ...restaurant } = Restaurant.serialize(doc);
+            restaurants[restaurant.id] = restaurant;
           });
-          res.send(Object.assign(app.locals.users[userId], {
+          res.send(Object.assign(Object.assign({}, user), {
             restaurants: Object.values(restaurants),
           }));
         })

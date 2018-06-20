@@ -26,8 +26,6 @@ app.use((req, res, next) => {
 require('./routes')(app);
 
 // MARK: - start server
-const server = app.listen(process.env.PORT
-  || (process.env.NODE_ENV === 'production' ? 3000 : 3001),
-  () => {
-    console.log(`Server started on port ${server.address().port}`)
+const server = app.listen(process.env.PORT || 3000, () => {
+  console.log(`Server started on port ${server.address().port}`)
 });
