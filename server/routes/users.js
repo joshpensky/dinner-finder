@@ -1,18 +1,32 @@
-const { Restaurant, User } = require('../serializers');
+const { Restaurant, User } = require('../models');
+
+const EXPIRE_CACHE = 60 * 60 * 1000;
 
 module.exports = (app, uri, db) => {
-  // MARK: - GET user list
-  app.get(uri, (req, res) => {
+  // MARK - User middleware
+  app.use((req, res, next) => {
+    if (app.locals.users) return next();
     db.collection('users').get()
       .then(snapshot => {
-        let users = {}
-        snapshot.forEach(doc => users[doc.id] = User.serialize(doc));
-        res.send(Object.values(users));
+        app.locals.users = {}
+        var picturePromises = [];
+        snapshot.forEach(doc => {
+          app.locals.users[doc.id] = User.serialize(doc);
+        });
+        setTimeout(() => {
+          delete app.locals.users;
+        }, EXPIRE_CACHE);
+        return next();
       })
       .catch(err => {
         res.status(500).send("Error retrieving users");
-        console.log(err);
+        console.error(err);
       });
+  })
+
+  // MARK: - GET user list
+  app.get(uri, (req, res) => {
+    res.send(Object.values(app.locals.users));
   });
 
   // MARK: - GET user detail
@@ -28,11 +42,11 @@ module.exports = (app, uri, db) => {
             .then(snapshot => {
               let restaurants = {}
               snapshot.forEach(doc => {
-                var { user, ...restaurant } = Restaurant.serialize(doc);
+                var { user, ...restaurant } = Restaurant.serialize(app, doc);
                 restaurants[restaurant.id] = restaurant;
               });
               res.send(Object.assign(Object.assign({}, user), {
-                restaurants: Object.values(restaurants),
+                restaurants: Object.values(restaurants).sort((l, r) => l.name.localeCompare(r.name)),
               }));
             })
             .catch(_ => {
@@ -44,7 +58,7 @@ module.exports = (app, uri, db) => {
       })
       .catch(err => {
         res.status(500).send("Error retrieving user");
-        console.log(err);
+        console.error(err);
       })
   });
 };

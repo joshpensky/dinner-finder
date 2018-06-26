@@ -1,6 +1,7 @@
 class Restaurant {
-  constructor(name, user, cuisines, food_options) {
+  constructor(name, description, user, cuisines, food_options) {
     let errors = this._verifyName(name, {});
+    errors = this._verifyDescription(description, errors);
     errors = this._verifyUser(user, errors);
     errors = this._verifyCuisines(cuisines, errors);
     errors = this._verifyFoodOptions(food_options, errors);
@@ -24,6 +25,15 @@ class Restaurant {
       this.userId = user;
     } else {
       errors['user'] = 'User must be represented by a string ID.';
+    }
+    return errors;
+  }
+
+  _verifyDescription(description, errors) {
+    if (typeof description === 'string') {
+      this.description = description;
+    } else {
+      errors['description'] = 'Description must be represented by a string.';
     }
     return errors;
   }
@@ -85,9 +95,22 @@ class Restaurant {
   data(db) {
     return {
       name: this.name,
+      description: this.description,
       user: db.doc(this.user),
       cuisines: this.cuisines,
       food_options: this.food_options,
+    };
+  }
+  
+  static serialize(app, doc) {
+    const data = doc.data()
+    return {
+      id: doc.id,
+      name: data.name,
+      user: app.locals.users[data.user._referencePath.segments.slice(-1)[0]],
+      description: data.description,
+      cuisines: Object.keys(data.cuisines).sort(),
+      food_options: data.food_options,
     };
   }
 }

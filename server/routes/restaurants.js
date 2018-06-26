@@ -1,40 +1,52 @@
 const QueryFilter = require('../utils/QueryFilter');
-const { Restaurant: RestaurantModel } = require('../models');
-const { Restaurant: ResturantSerializer } = require('../serializers');
+const { Restaurant } = require('../models');
 
 module.exports = (app, uri, db) => {
-  // MARK: - GET restaurant list
-  app.get(uri, (req, res) => {
+  // MARK: - Helper function for querying restaurants
+  const getFilteredQuery = (req, res) => {
     let { users, cuisines } = req.query;
     let dbRefs = [db.collection('restaurants')];
     [
       new QueryFilter(users, (ref, user) => ref.where('user', '==', db.doc(`users/${user}`))),
       new QueryFilter(cuisines, (ref, cuisine) => ref.where(`cuisines.${cuisine}`, '==', true)),
     ].forEach(queryFilter => dbRefs = queryFilter.applyTo(dbRefs));
-    Promise.all(dbRefs.map(ref => ref.get()))
+    return Promise.all(dbRefs.map(ref => ref.get()))
       .then(queries => {
         var restaurants = {}
         queries.forEach(snapshot => {
           snapshot.forEach(doc => {
-            var restaurant = ResturantSerializer.serialize(doc);
+            var restaurant = Restaurant.serialize(app, doc);
             restaurants[restaurant.id] = restaurant;
-          })
-        })
-        res.send(Object.values(restaurants)
-          .sort((l, r) => l.name.localeCompare(r.name)));
+          });
+        });
+        return Object.values(restaurants).sort((l, r) => l.name.localeCompare(r.name))
       })
       .catch(err => {
         res.status(500).send("Error retrieving restaurants");
-        console.log(err);
+        console.error(err);
       });
+  }
+
+  // MARK: - GET restaurant list
+  app.get(uri, (req, res) => {
+    getFilteredQuery(req, res)
+      .then(restaurants => res.send(restaurants));
   });
+
+  // MARK: - GET random restaurant
+  app.get(`${uri}/choose`, (req, res) => {
+    getFilteredQuery(req, res)
+      .then(restaurants => {
+        res.send(restaurants[Math.floor(Math.random() * restaurants.length)]);
+      });
+  })
 
   // MARK: - CREATE restaurant
   app.post(uri, (req, res) => {
-    const { name, user, cuisines, food_options } = req.body;
+    const { name, description, user, cuisines, food_options } = req.body;
     var restaurant;
     try {
-      restaurant = new RestaurantModel(name, user, cuisines, food_options);
+      restaurant = new Restaurant(name, description, user, cuisines, food_options);
     } catch (err) {
       return res.status(400).send(JSON.parse(err.message));
     }
@@ -52,15 +64,10 @@ module.exports = (app, uri, db) => {
     }).then(result => {
       db.collection('restaurants').add(data)
         .then(ref => {
-          data.user = user;
-          res.send(Object.assign({ id: ref.id, }, data));
+          res.send(Object.assign(Object.assign({ id: ref.id }, data), { user: user }));
         })
-        .catch(err => {
-          res.status(400).send(err.message);
-        });
-    }).catch(err => {
-      res.status(400).send(err);
-    });
+        .catch(err => res.status(400).send(err.message));
+    }).catch(err => res.status(400).send(err));
   });
 
   // MARK: - GET restaurant detail
@@ -71,13 +78,13 @@ module.exports = (app, uri, db) => {
         if (!doc.exists) {
           res.status(404).send('Restaurant not found');
         } else {
-          var restaurant = ResturantSerializer.serialize(doc);
+          var restaurant = Restaurant.serialize(app, doc);
           res.send(restaurant);
         }
       })
       .catch(err => {
         res.status(500).send("Error retrieving restaurant.");
-        console.log(err);
+        console.error(err);
       });
   });
 };

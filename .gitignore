@@ -3,4 +3,7 @@ node_modules
 .DS_store
 .vscode
 
+build/bundle.js
+build/static
+
 serviceAccountKey.json

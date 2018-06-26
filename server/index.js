@@ -25,7 +25,15 @@ app.use((req, res, next) => {
 // MARK: - add routes
 require('./routes')(app);
 
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.resolve(__dirname, '../dist')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../dist/200.html'));
+  });
+}
+
 // MARK: - start server
-const server = app.listen(process.env.PORT || 3000, () => {
+const server = app.listen(process.env.PORT
+  || (process.env.NODE_ENV === 'production' ? 3000 : 3001), () => {
   console.log(`Server started on port ${server.address().port}`)
 });
