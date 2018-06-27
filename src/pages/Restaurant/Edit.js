@@ -1,7 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import styled, { css } from 'styled-components';
 import Helmet from 'react-helmet';
-import { Cuisines, Header, ImageInput, InputGroup, Menu, TextArea, TextInput, UserFilters } from 'components';
+import { withRouter } from 'react-router-dom';
+import { Cuisines, Header, ImageInput, InputGroup, Modal, Menu, TextArea, TextInput, UserFilters } from 'components';
 import { AndFilter, H1, H3, OptionLink } from 'style';
 import { maxTextWidth } from 'style/constants';
 import { api, getFileExtension, titleCase } from 'utils';
@@ -24,10 +25,11 @@ const CuisineFilters = styled.div`
   margin-bottom: -5px;
 `;
 
-class RestaurantCreate extends Component {
+class RestaurantEdit extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      id: this.props.match.params.id,
       name: '',
       description: '',
       newCuisine: '',
@@ -36,7 +38,9 @@ class RestaurantCreate extends Component {
       cuisines: {},
       users: {},
       selectedUser: '',
-      selectedImage: null,
+      coverPhoto: null,
+      coverPhotoPreview: '',
+      deleteModalVisible: false,
     };
 
     this.updateText = this.updateText.bind(this);
@@ -47,6 +51,8 @@ class RestaurantCreate extends Component {
     this.newMenuItem = this.newMenuItem.bind(this);
     this.removeMenuItem = this.removeMenuItem.bind(this);
     this.saveRestaurant = this.saveRestaurant.bind(this);
+    this.deleteRestaurant = this.deleteRestaurant.bind(this);
+    this.showDeleteModal = this.showDeleteModal.bind(this);
   }
 
   componentDidMount() {
@@ -68,6 +74,33 @@ class RestaurantCreate extends Component {
         this.setState({ users });
       });
     Promise.all([cuisineFetch, userFetch])
+      .then(() => {
+        api(`/restaurants/${this.state.id}`)
+          .then(data => {
+            let { users, cuisines } = this.state;
+            data.cuisines.forEach(c => cuisines[c] = true);
+            let userId = data.user.id;
+            Object.keys(users).forEach(u => {
+              users[u].checked = u === userId;
+            });
+            this.setState({
+              name: data.name,
+              description: data.description || '',
+              selectedUser: userId,
+              cuisines,
+              menuItems: data.food_options,
+              coverPhotoPreview: data.cover_photo,
+            });
+          })
+          .catch(err => {
+            if (err.status === 404) {
+              this.setState({
+                fetched: true,
+                notFound: true,
+              });
+            };
+          });
+      })
       .catch(err => {
         console.error(err);
       });
@@ -94,7 +127,7 @@ class RestaurantCreate extends Component {
 
   updateImage(e) {
     this.setState({
-      selectedImage: e.target.file,
+      coverPhoto: e.target.file,
     })
   }
 
@@ -145,7 +178,7 @@ class RestaurantCreate extends Component {
 
   saveRestaurant() {
     return new Promise((resolve, reject) => {
-      let { name, description, selectedUser, selectedImage, cuisines, menuItems } = this.state;
+      let { id, name, description, selectedUser, coverPhoto, cuisines, menuItems } = this.state;
       name = name.trim();
       description = description.trim();
       cuisines = Object.keys(cuisines).filter(c => cuisines[c]);
@@ -164,30 +197,55 @@ class RestaurantCreate extends Component {
       const formData = new FormData();
       formData.append('name', name);
       formData.append('description', description);
-      if (selectedImage !== null) {
-        formData.append('cover_photo', selectedImage, name + '.' + getFileExtension(selectedImage.name));
+      if (coverPhoto !== null) {
+        formData.append('cover_photo', coverPhoto);
       }
       formData.append('user', selectedUser);
       formData.append('cuisines', JSON.stringify(cuisines));
       formData.append('food_options', JSON.stringify(menuItems));
-      api('/restaurants', 'POST', formData)
-        .then(data => resolve(`/restaurants/${data.id}`))
+      api(`/restaurants/${id}`, 'POST', formData)
+        .then(data => resolve(`/restaurants/${id}`))
         .catch(err => {
-          console.log(err);
-          reject()
+          reject(err)
         });
     });
   }
 
+  showDeleteModal() {
+    return new Promise((resolve, reject) => {
+      this.setState({
+        deleteModalVisible: true,
+      }, reject);
+    });
+  }
+
+  deleteRestaurant() {
+    return new Promise((resolve, reject) => {
+      api(`/restaurants/${this.state.id}`, 'DELETE')
+        .then(data => {
+          this.props.history.push('/restaurants');
+          return resolve();
+        })
+        .catch(err => {
+          reject(err);
+        });
+    })
+  }
+
   render() {
-    const { name, description, users, newCuisine, cuisines, newMenuItem, menuItems } = this.state;
+    const { deleteModalVisible, id, name, description, users, newCuisine, cuisines, newMenuItem, menuItems, coverPhotoPreview } = this.state;
     return (
       <Fragment>
         <Helmet>
-          <title>New Restaurant</title>
+          <title>Edit Restaurant</title>
         </Helmet>
-        <Header title="New Restaurant">
-          <OptionLink to="/restaurants" onClick={this.saveRestaurant}>Save</OptionLink>
+        <Modal visible={deleteModalVisible} actions={[
+          { text: 'Confirm', main: true, action: this.deleteRestaurant },
+          { text: 'Cancel' },
+        ]} />
+        <Header title="Edit Restaurant">
+          <OptionLink to={`/restaurants/${id}`} onClick={this.saveRestaurant}>Save</OptionLink>
+          <OptionLink to="/restaurants" onClick={this.showDeleteModal} destructive>Delete</OptionLink>
         </Header>
         <Form>
           <InputGroup required htmlFor="name" title="Name" large>
@@ -199,7 +257,7 @@ class RestaurantCreate extends Component {
               id="description" value={description} onChange={this.updateText} />
           </InputGroup>
           <InputGroup title="Cover Photo" large hint="Maximum image upload size is 2MB">
-            <ImageInput id="imageInput" maxSize={2} onChange={this.updateImage} />
+            <ImageInput id="imageInput" maxSize={2} onChange={this.updateImage} preview={coverPhotoPreview} />
           </InputGroup>
           <InputGroup required title="Closer to" large>
             <UserFilters large items={users} onChange={this.updateUser} />
@@ -224,4 +282,4 @@ class RestaurantCreate extends Component {
   }
 }
 
-export default RestaurantCreate;
+export default withRouter(RestaurantEdit);

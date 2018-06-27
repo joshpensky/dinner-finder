@@ -1,26 +1,25 @@
 const parseJSON = response => {
   return new Promise((resolve) => {
+    console.log(response);
     if (response.status === 404) {
-      return resolve({
-        status: 404,
-        ok: false,
-        data: response.statusText,
-      });
+      return statusResolve(resolve, 404, false, response.statusText);
+    } else if (response.status === 204) {
+      return statusResolve(resolve, 204, true, response.statusText);
     }
-    return response.json().then(json => {
-      resolve({
-        status: response.status,
-        ok: response.ok,
-        data: json,
-      });
-    });
+    return response.json()
+      .then(json => statusResolve(resolve, response.status, response.ok, json));
   });
 }
 
+const statusResolve = (resolve, status, ok, data) => {
+  return resolve({
+    status: status,
+    ok: ok,
+    data,
+  })
+}
+
 export default (endpoint, method = 'GET', body = new FormData()) => {
-  for (var v in body.entries()) {
-    console.log(v);
-  }
   let options = { method }
   if (method === 'POST' || method === 'PUT') {
     options = Object.assign(options, {

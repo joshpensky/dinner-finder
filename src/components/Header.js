@@ -7,7 +7,7 @@ const Container = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-end;
-  padding-bottom: 15px;
+  padding-bottom: ${props => props.smallPad ? 8 : 15}px;
   width: 100%;
 `;
 
@@ -15,20 +15,23 @@ const Options = styled.div`
   position: relative;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: flex-end;
-  margin-bottom: 4px;
+  justify-content: flex-end
+  margin-bottom: calc(4px - 6px);
+  margin-left: 10px;
 
   & * {
-    margin-right: 15px;
+    margin-left: 6px;
 
-    &:last-child {
-      margin-right: 0;
+    &:first-child {
+      margin-left: 0px;
     }
   }
 `;
 
 const Header = props => (
-  <Container>
+  <Container smallPad={props.smallPad}>
     <H1>{props.title}</H1>
     <Options>
       {props.children}

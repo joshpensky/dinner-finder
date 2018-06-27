@@ -17,7 +17,7 @@ const Preview = styled.div`
   height: 0;
   padding-top: calc(100% / 3);
   background-color: ${grayBg};
-  background-image: url(${props => props.source});
+  background-image: url("${props => props.source}");
   background-size: cover;
   background-position: center;
   background-repeat: none;
@@ -150,6 +150,7 @@ class ImageInput extends Component {
       maxSize: (props.maxSize || 5) * BYTE_SIZE,
       selectedFile: null,
       selectedFilePreview: '',
+      initPreviewed: false,
     };
 
     this.fileHandler = this.fileHandler.bind(this);
@@ -168,6 +169,16 @@ class ImageInput extends Component {
         this.preview.addEventListener(e, this.dropLeave);
       });
       this.preview.addEventListener('drop', this.droppedFile);
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { preview } = nextProps;
+    if (!this.state.initPreviewed && preview && preview.length > 0 && this.state.selectedFile === null) {
+      this.setState({
+        initPreviewed: true,
+        selectedFilePreview: preview,
+      })
     }
   }
 
@@ -230,15 +241,16 @@ class ImageInput extends Component {
 
   render() {
     const active = this.state.dropActive;
+    const { selectedFilePreview } = this.state;
     return (
       <Container>
         <Input id={this.props.id} onChange={this.fileHandler} />
-        <Preview source={this.state.selectedFilePreview} active={active} innerRef={ref => this.preview = ref}>
-          {this.state.isDragUpload && this.state.selectedFile === null && <Hint active={active}>Drag to upload</Hint>}
+        <Preview source={selectedFilePreview} active={active} innerRef={ref => this.preview = ref}>
+          {this.state.isDragUpload && selectedFilePreview.length === 0 && <Hint active={active}>Drag to upload</Hint>}
         </Preview>
         <Buttons>
           <Upload htmlFor={this.props.id}>Upload</Upload>
-          {this.state.selectedFile && <Clear onClick={this.clearSelection} />}
+          {selectedFilePreview.length > 0 && <Clear onClick={this.clearSelection} />}
         </Buttons>
       </Container>
     );

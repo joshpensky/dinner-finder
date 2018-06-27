@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import Helmet from 'react-helmet';
-import { Cuisines, Menu, NotFound } from 'components';
-import { H1, H3, Link, P } from 'style';
+import { Cuisines, Header, Menu, NotFound } from 'components';
+import { H1, H3, Link, OptionLink, P } from 'style';
 import { borderRadius, grayBg, grayText, maxTextWidth, screenSm, screenMd, systemFont } from 'style/constants';
 import { api, newlineResolver } from 'utils';
 
@@ -16,6 +16,7 @@ const Hero = styled.div`
   background-position: center;
   background-repeat: no-repeat;
   border-radius: ${borderRadius};
+  margin-bottom: 15px;
 
   @media (max-width: ${screenMd}) {
     padding-top: calc(100% / 2);
@@ -26,7 +27,7 @@ const Hero = styled.div`
   }
 `;
 
-const Header = styled.div`
+const TitleHeader = styled.div`
   margin-top: 15px;
   margin-bottom: 8px;
   display: flex;
@@ -100,7 +101,7 @@ class RestaurantDetail extends Component {
   }
 
   render() {
-    const { fetched, notFound, name, user, description, cover_photo, cuisines, food_options } = this.state;
+    const { fetched, notFound, id, name, user, description, cover_photo, cuisines, food_options } = this.state;
     if (!fetched) {
       return <Hero />
     } else if (notFound) {
@@ -113,11 +114,8 @@ class RestaurantDetail extends Component {
           <title>{name}</title>
         </Helmet>
         <Hero source={String(cover_photo)} />
-        <Header>
-          <Name>{name}</Name>
-          <Link to={userLink}>
-            <User source={user.profile_picture} />
-          </Link>
+        <Header title={name} smallPad>
+          <OptionLink to={`/restaurants/${id}/edit`}>Edit</OptionLink>
         </Header>
         <Cuisines items={cuisines} />
         {description && description.length > 0 && (

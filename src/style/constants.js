@@ -8,6 +8,7 @@ export const grayBg = '#eee';
 export const grayText = '#6a6a6a';
 export const placeholderColor = '#bbb';
 export const red = '#ff1c07';
+export const clearRed = `#ffe6e4`;
 
 /* FONT FAMILIES */
 export const systemFont = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';

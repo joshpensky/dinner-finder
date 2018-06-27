@@ -36,22 +36,7 @@ module.exports = (app, uri, db, bucket) => {
       });
   }
 
-  // MARK: - GET restaurant list
-  app.get(uri, (req, res) => {
-    getFilteredQuery(req, res)
-      .then(restaurants => res.send(restaurants));
-  });
-
-  // MARK: - GET random restaurant
-  app.get(`${uri}/choose`, (req, res) => {
-    getFilteredQuery(req, res)
-      .then(restaurants => {
-        res.send(restaurants[Math.floor(Math.random() * restaurants.length)]);
-      });
-  })
-
-  // MARK: - CREATE restaurant
-  app.post(uri, upload.single('cover_photo'), (req, res) => {
+  const createEditRestaurant = (req, res, dbPromise) => {
     const { name, description, user, cuisines, food_options } = req.body;
     const cover_photo = req.file;
     var restaurant;
@@ -73,24 +58,42 @@ module.exports = (app, uri, db, bucket) => {
           return Promise.reject('User does not exist');
         });
     }).then(() => {
-        return restaurant.cover_photo
-          ? uploadFileToStorage(bucket, restaurant.cover_photo, restaurant.cover_photo_name)
-          : Promise.resolve();
+      return restaurant.cover_photo
+        ? uploadFileToStorage(bucket, restaurant.cover_photo, restaurant.cover_photo_name)
+        : Promise.resolve();
     }).then(url => {
-      console.log(url)
-        if (url) {
-          Object.assign(data, {
-            cover_photo: url,
-          });
-        }
-        db.collection('restaurants').add(data)
-          .then(ref => {
-            res.send(Object.assign(Object.assign({
-              id: ref.id,
-            }, data), { user: user }));
-          })
-          .catch(err => res.status(400).send(err.message));
+      if (url) {
+        data = Object.assign(data, {
+          cover_photo: url,
+        });
+      }
+      dbPromise(data).then(ref => {
+        res.send(Object.assign(Object.assign({
+          id: ref.id,
+        }, data), { user: user }));
+      }).catch(err => res.status(400).send(err.message));
     }).catch(err => res.status(400).send(err));
+  }
+
+  // MARK: - GET restaurant list
+  app.get(uri, (req, res) => {
+    getFilteredQuery(req, res)
+      .then(restaurants => res.send(restaurants));
+  });
+
+  // MARK: - GET random restaurant
+  app.get(`${uri}/choose`, (req, res) => {
+    getFilteredQuery(req, res)
+      .then(restaurants => {
+        res.send(restaurants[Math.floor(Math.random() * restaurants.length)]);
+      });
+  })
+
+  // MARK: - CREATE restaurant
+  app.post(uri, upload.single('cover_photo'), (req, res) => {
+    createEditRestaurant(req, res, data => {
+      return db.collection('restaurants').add(data)
+    });
   });
 
   // MARK: - GET restaurant detail
@@ -109,5 +112,25 @@ module.exports = (app, uri, db, bucket) => {
         res.status(500).send("Error retrieving restaurant.");
         console.error(err);
       });
+  });
+
+  // MARK: - UPDATE restaurant
+  app.post(`${uri}/:restaurantId`, upload.single('cover_photo'), (req, res) => {
+    const { restaurantId } = req.params;
+    createEditRestaurant(req, res, data => {
+      return db.collection('restaurants').doc(restaurantId).set(data, {
+        merge: true,
+      });
+    });
+  });
+
+  // MARK: - DELETE restaurant
+  app.delete(`${uri}/:restaurantId`, (req, res) => {
+    const { restaurantId } = req.params;
+    db.collection('restaurants').doc(restaurantId).delete()
+      .then(() => res.sendStatus(204))
+      .catch(err => {
+        res.status(500).send("Error deleting document");
+      })
   });
 };

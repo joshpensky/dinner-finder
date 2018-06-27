@@ -5,6 +5,7 @@ import { borderRadius, grayBg, grayText, systemFont } from 'style/constants';
 const Container = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
 `;
 
 const Cuisine = styled.div`

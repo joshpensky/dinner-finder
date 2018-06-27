@@ -3,6 +3,7 @@ import Header from './Header';
 import ImageInput from './ImageInput';
 import InputGroup from './InputGroup';
 import Menu from './Menu';
+import Modal from './Modal';
 import Nav from './Nav';
 import NotFound from './NotFound';
 import Restaurant from './Restaurant';
@@ -18,6 +19,7 @@ export {
   ImageInput,
   InputGroup,
   Menu,
+  Modal,
   Nav,
   NotFound,
   Restaurant,

@@ -73,6 +73,13 @@ class TextArea extends Component {
   }
 
   componentDidMount() {
+    window.addEventListener('resize', () => {
+      this.updateMessage({
+        target: { 
+          value: this.state.value
+        },
+      })
+    });
     const { value } = this.state;
     this.updateHeight(this.state.height
       + (value.length <= 0
@@ -80,7 +87,17 @@ class TextArea extends Component {
         : this.state.fontSize * JSON.stringify(value).split(/\r\n|\r|\n/).length));
   }
 
-  updateHeight(height, callback) {
+  componentWillReceiveProps(nextProps) {
+    if (this.state.value !== nextProps.value) {
+      this.updateMessage({
+        target: {
+          value: nextProps.value,
+        }
+      });
+    }
+  }
+
+  updateHeight(height) {
     this.setState({
       height: height,
     });

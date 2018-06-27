@@ -64,6 +64,12 @@ class TextInput extends Component {
     this.inputRef = this.inputRef.bind(this);
   }
 
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      value: nextProps.value,
+    });
+  }
+
   onChange(e) {
     this.setState({
       value: e.target.value,
