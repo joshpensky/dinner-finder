@@ -1,10 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import styled, { css } from 'styled-components';
 import Helmet from 'react-helmet';
-import { Cuisines, Header, InputGroup, Menu, TextArea, TextInput, UserFilters } from 'components';
+import { Cuisines, Header, ImageInput, InputGroup, Menu, TextArea, TextInput, UserFilters } from 'components';
 import { AndFilter, H1, H3, OptionLink } from 'style';
 import { maxTextWidth } from 'style/constants';
-import { api, titleCase } from 'utils';
+import { api, getFileExtension, titleCase } from 'utils';
 
 const Form = styled.form`
   display: flex;
@@ -13,6 +13,7 @@ const Form = styled.form`
   width: 100%;
   padding-top: 10px;
   max-width: ${maxTextWidth};
+  padding-bottom: 80px;
 `;
 
 const CuisineFilters = styled.div`
@@ -35,10 +36,12 @@ class RestaurantCreate extends Component {
       cuisines: {},
       users: {},
       selectedUser: '',
+      selectedImage: null,
     };
 
     this.updateText = this.updateText.bind(this);
     this.updateUser = this.updateUser.bind(this);
+    this.updateImage = this.updateImage.bind(this);
     this.newCuisine = this.newCuisine.bind(this);
     this.updateCuisines = this.updateCuisines.bind(this);
     this.newMenuItem = this.newMenuItem.bind(this);
@@ -89,6 +92,12 @@ class RestaurantCreate extends Component {
     });
   }
 
+  updateImage(e) {
+    this.setState({
+      selectedImage: e.target.file,
+    })
+  }
+
   newCuisine() {
     let { cuisines, newCuisine } = this.state;
     newCuisine = newCuisine.trim();
@@ -119,7 +128,7 @@ class RestaurantCreate extends Component {
     let { menuItems, newMenuItem } = this.state;
     newMenuItem = newMenuItem.trim();
     if (newMenuItem.length > 0) {
-      menuItems.push(titleCase(newMenuItem));
+      menuItems.push(newMenuItem);
       this.setState({
         menuItems,
         newMenuItem: '',
@@ -136,7 +145,7 @@ class RestaurantCreate extends Component {
 
   saveRestaurant() {
     return new Promise((resolve, reject) => {
-      let { name, description, selectedUser, cuisines, menuItems } = this.state;
+      let { name, description, selectedUser, selectedImage, cuisines, menuItems } = this.state;
       name = name.trim();
       description = description.trim();
       cuisines = Object.keys(cuisines).filter(c => cuisines[c]);
@@ -152,13 +161,17 @@ class RestaurantCreate extends Component {
       if (menuItems.length < 1) {
         return reject();
       }
-      api('/restaurants', 'POST', {
-        name,
-        description,
-        user: selectedUser,
-        cuisines,
-        food_options: menuItems,
-      }).then(() => resolve())
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('description', description);
+      if (selectedImage !== null) {
+        formData.append('cover_photo', selectedImage, name + '.' + getFileExtension(selectedImage.name));
+      }
+      formData.append('user', selectedUser);
+      formData.append('cuisines', JSON.stringify(cuisines));
+      formData.append('food_options', JSON.stringify(menuItems));
+      api('/restaurants', 'POST', formData)
+        .then(data => resolve(`/restaurants/${data.id}`))
         .catch(err => {
           console.log(err);
           reject()
@@ -185,10 +198,13 @@ class RestaurantCreate extends Component {
             <TextArea tabIndex="2" placeholder="Former home of Guy Fieri"
               id="description" value={this.value} onChange={this.updateText} />
           </InputGroup>
+          <InputGroup title="Cover Photo" large hint="Maximum image upload size is 2MB">
+            <ImageInput id="imageInput" maxSize={2} onChange={this.updateImage} />
+          </InputGroup>
           <InputGroup required title="Closer to" large>
             <UserFilters large items={users} onChange={this.updateUser} />
           </InputGroup>
-          <InputGroup require title="Cuisines" large>
+          <InputGroup required title="Cuisines" large>
             <TextInput id="newCuisine" value={newCuisine} placeholder="Southern, Korean, Thai, ..." padBottom
               submitText="Add" tabIndex="3" onChange={this.updateText} onSubmit={this.newCuisine} />
             <CuisineFilters>

@@ -48,9 +48,9 @@ module.exports = {
     port: 3000,
     inline: true,
     publicPath: 'static/',
-    index: '200.html',
+    index: 'index.html',
     historyApiFallback: {
-      index: '200.html',
+      index: 'index.html',
     },
   },
 };

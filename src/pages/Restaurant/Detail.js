@@ -11,7 +11,7 @@ const Hero = styled.div`
   height: 0;
   padding-top: calc(100% / 3);
   background-color: ${grayBg};
-  background-image: url(${props => props.source});
+  background-image: url("${props => props.source}");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -45,7 +45,7 @@ const User = styled.div`
   border-radius: 50%;
   margin-left: 15px;
   background-color: #eee;
-  background-image: url(${props => props.source});
+  background-image: url("${props => props.source}");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -75,6 +75,7 @@ class RestaurantDetail extends Component {
       name: '',
       user: null,
       description: '',
+      cover_photo: '',
       cuisines: [],
       food_options: [],
     };
@@ -99,7 +100,7 @@ class RestaurantDetail extends Component {
   }
 
   render() {
-    let { fetched, notFound, name, user, description, cuisines, food_options } = this.state;
+    const { fetched, notFound, name, user, description, cover_photo, cuisines, food_options } = this.state;
     if (!fetched) {
       return <Hero />
     } else if (notFound) {
@@ -111,7 +112,7 @@ class RestaurantDetail extends Component {
         <Helmet>
           <title>{name}</title>
         </Helmet>
-        <Hero />
+        <Hero source={String(cover_photo)} />
         <Header>
           <Name>{name}</Name>
           <Link to={userLink}>

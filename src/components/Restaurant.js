@@ -52,14 +52,14 @@ const Container = styled.div`
   }
 `;
 
-const Image = styled.div`
+const CoverPhoto = styled.div`
   width: 100%;
   height: 0;
   padding-top: calc(200% / 3);
   display: table;
   background-color: ${grayBg};
   margin-bottom: 10px;
-  background-image: url(${props => props.source});
+  background-image: url("${props => props.source}");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -78,7 +78,7 @@ const User = styled(Link)`
   background-color: ${grayBg};
   border-radius: 50%;
   margin-left: 10px;
-  background-image: url(${props => props.source});
+  background-image: url("${props => props.source}");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -93,13 +93,13 @@ const Title = styled(Link)`
 `;
 
 const Restaurant = props => {
-  const { id, cuisines, image, name, user } = props;
+  const { id, cuisines, cover_photo, name, user } = props;
   const restaurantUrl = `/restaurants/${id}`;
   const userUrl = `/users/${user.id}`;
   return (
     <Container>
       <Link to={restaurantUrl}>
-        <Image source={image} />
+        <CoverPhoto source={cover_photo} />
       </Link>
       <Header>
         <Title to={restaurantUrl}>{name}</Title>

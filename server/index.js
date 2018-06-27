@@ -3,12 +3,13 @@ const express = require('express');
 const compression = require('compression');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
 
 // MARK: - initialize express app
 const app = express();
 app.use(compression());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: false, limit: '5mb', parameterLimit: 1000000 }));
 app.use(logger('dev'));
 app.disable('x-powered-by');
 

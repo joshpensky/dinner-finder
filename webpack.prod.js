@@ -44,6 +44,11 @@ module.exports = {
     }),
     new CopyWebpackPlugin([
       {
+        from: path.resolve(__dirname, 'build/index.html'),
+        to: path.resolve(__dirname, 'dist/index.html'),
+        toType: 'file',
+      },
+      {
         from: path.resolve(__dirname, 'src/static'),
         to: path.resolve(__dirname, 'dist/static'),
         toType: 'dir',

@@ -3,6 +3,7 @@ export const black = '#000';
 export const blue = '#023CFF';
 export const clearBlue = `${blue}1f`;
 export const white = '#fff';
+export const darkGrayBg = '#ccc';
 export const grayBg = '#eee';
 export const grayText = '#6a6a6a';
 export const placeholderColor = '#bbb';

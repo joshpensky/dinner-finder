@@ -1,7 +1,9 @@
 class Restaurant {
-  constructor(name, description, user, cuisines, food_options) {
+  constructor(name, description, cover_photo, user, cuisines, food_options) {
+    //console.log(name, description, cover_photo, user, cuisines, food_options)
     let errors = this._verifyName(name, {});
     errors = this._verifyDescription(description, errors);
+    errors = this._verifyCoverPhoto(cover_photo, name, errors);
     errors = this._verifyUser(user, errors);
     errors = this._verifyCuisines(cuisines, errors);
     errors = this._verifyFoodOptions(food_options, errors);
@@ -19,21 +21,33 @@ class Restaurant {
     return errors;
   }
 
+  _verifyDescription(description, errors) {
+    if (typeof description === 'string') {
+      this.description = description;
+    } else {
+      errors['description'] = 'Description must be represented by a string.';
+    }
+    return errors;
+  }
+
+  _verifyCoverPhoto(cover_photo, name, errors) {
+    if (cover_photo) {
+      if (cover_photo.mimetype.includes('image/')) {
+        this.cover_photo = cover_photo;
+        this.cover_photo_name = `${name}_${Date.now()}.${this.cover_photo.originalname.split('.').pop()}`
+      } else {
+        errors['cover_photo'] = 'Cover photo must be an image.';
+      }
+    }
+    return errors;
+  }
+
   _verifyUser(user, errors) {
     if (typeof user === 'string') {
       this.user = `users/${user}`;
       this.userId = user;
     } else {
       errors['user'] = 'User must be represented by a string ID.';
-    }
-    return errors;
-  }
-
-  _verifyDescription(description, errors) {
-    if (typeof description === 'string') {
-      this.description = description;
-    } else {
-      errors['description'] = 'Description must be represented by a string.';
     }
     return errors;
   }
@@ -107,8 +121,9 @@ class Restaurant {
     return {
       id: doc.id,
       name: data.name,
-      user: app.locals.users[data.user._referencePath.segments.slice(-1)[0]],
       description: data.description,
+      cover_photo: data.cover_photo,
+      user: app.locals.users[data.user._referencePath.segments.slice(-1)[0]],
       cuisines: Object.keys(data.cuisines).sort(),
       food_options: data.food_options,
     };

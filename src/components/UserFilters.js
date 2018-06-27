@@ -31,10 +31,6 @@ const ProfilePicture = styled.label`
   position: relative;
   cursor: pointer;
 
-  input[type="checkbox"] {
-    display: none;
-  }
-
   &::after {
     content: '';
     position: absolute;
@@ -48,6 +44,12 @@ const ProfilePicture = styled.label`
     transition: 0.1s ease-out;
     z-index: -2;
   }
+`;
+
+const RadioButton = styled.input.attrs({
+  type: 'radio',
+})`
+  display: none;
 `;
 
 const NameLabel = styled.label`
@@ -69,7 +71,7 @@ const UserFilters = props => {
       {Object.values(items).map((item, i) => (
         <Wrapper key={i} large={large}>
           <ProfilePicture htmlFor={item.id} source={item.profile_picture} checked={item.checked} large={props.large}>
-            <input type="radio" id={item.id} value={item.id} checked={item.checked} onClick={props.onChange} />
+            <RadioButton id={item.id} value={item.id} checked={item.checked} onClick={props.onChange} />
           </ProfilePicture>
           {large && <NameLabel htmlFor={item.id} checked={item.checked}>{item.name.first}</NameLabel>}
         </Wrapper>

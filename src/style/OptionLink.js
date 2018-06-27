@@ -18,6 +18,7 @@ class OptionLink extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      overrideTo: undefined,
       redirect: false,
     };
 
@@ -26,12 +27,14 @@ class OptionLink extends Component {
 
   handlePress() {
     this.props.onClick()
-      .then(() => {
+      .then(dest => {
         this.setState({
+          overrideTo: dest,
           redirect: true,
         })
       })
       .catch(err => {
+        console.log(err);
         if (this.state.redirect) {
           this.setState({
             redirect: false,
@@ -41,9 +44,10 @@ class OptionLink extends Component {
   }
 
   render() {
+    const { overrideTo } = this.state;
     const { to } = this.props;
     if (to && this.state.redirect) {
-      return <Redirect to={to} />
+      return <Redirect to={overrideTo || to} />
     }
     return (
       <Content onClick={this.handlePress}>

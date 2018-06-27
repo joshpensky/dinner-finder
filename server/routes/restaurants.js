@@ -1,7 +1,16 @@
 const QueryFilter = require('../utils/QueryFilter');
 const { Restaurant } = require('../models');
+const { uploadFileToStorage } = require('../utils');
+var multer = require('multer');
+var storage = multer.memoryStorage();
+var upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // no larger than 5mb
+  }
+});
 
-module.exports = (app, uri, db) => {
+module.exports = (app, uri, db, bucket) => {
   // MARK: - Helper function for querying restaurants
   const getFilteredQuery = (req, res) => {
     let { users, cuisines } = req.query;
@@ -42,12 +51,14 @@ module.exports = (app, uri, db) => {
   })
 
   // MARK: - CREATE restaurant
-  app.post(uri, (req, res) => {
+  app.post(uri, upload.single('cover_photo'), (req, res) => {
     const { name, description, user, cuisines, food_options } = req.body;
+    const cover_photo = req.file;
     var restaurant;
     try {
-      restaurant = new Restaurant(name, description, user, cuisines, food_options);
+      restaurant = new Restaurant(name, description, cover_photo, user, JSON.parse(cuisines), JSON.parse(food_options));
     } catch (err) {
+      console.log(err);
       return res.status(400).send(JSON.parse(err.message));
     }
     let data = restaurant.data(db);
@@ -61,12 +72,24 @@ module.exports = (app, uri, db) => {
           }
           return Promise.reject('User does not exist');
         });
-    }).then(result => {
-      db.collection('restaurants').add(data)
-        .then(ref => {
-          res.send(Object.assign(Object.assign({ id: ref.id }, data), { user: user }));
-        })
-        .catch(err => res.status(400).send(err.message));
+    }).then(() => {
+        return restaurant.cover_photo
+          ? uploadFileToStorage(bucket, restaurant.cover_photo, restaurant.cover_photo_name)
+          : Promise.resolve();
+    }).then(url => {
+      console.log(url)
+        if (url) {
+          Object.assign(data, {
+            cover_photo: url,
+          });
+        }
+        db.collection('restaurants').add(data)
+          .then(ref => {
+            res.send(Object.assign(Object.assign({
+              id: ref.id,
+            }, data), { user: user }));
+          })
+          .catch(err => res.status(400).send(err.message));
     }).catch(err => res.status(400).send(err));
   });
 

@@ -17,14 +17,14 @@ const parseJSON = response => {
   });
 }
 
-export default (endpoint, method = 'GET', body = {}) => {
+export default (endpoint, method = 'GET', body = new FormData()) => {
+  for (var v in body.entries()) {
+    console.log(v);
+  }
   let options = { method }
   if (method === 'POST' || method === 'PUT') {
     options = Object.assign(options, {
-      body: JSON.stringify(body),
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      body,
     })
   }
   return new Promise((resolve, reject) => {
