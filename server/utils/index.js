@@ -1,5 +1,7 @@
+const QueryFilter = require('./QueryFilter');
 const uploadFileToStorage = require('./uploadFileToStorage');
 
 module.exports = {
-  uploadFileToStorage
+  QueryFilter,
+  uploadFileToStorage,
 };

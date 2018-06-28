@@ -1,14 +1,6 @@
-const QueryFilter = require('../utils/QueryFilter');
 const { Restaurant } = require('../models');
-const { uploadFileToStorage } = require('../utils');
-var multer = require('multer');
-var storage = multer.memoryStorage();
-var upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // no larger than 5mb
-  }
-});
+const { QueryFilter, uploadFileToStorage } = require('../utils');
+const { upload } = require('../middleware');
 
 module.exports = (app, uri, db, bucket) => {
   // MARK: - Helper function for querying restaurants
@@ -69,20 +61,15 @@ module.exports = (app, uri, db, bucket) => {
         data = Object.assign(data, { cover_photo: '' });
       }
       dbPromise(data, url || clearPhoto).then(ref => {
+        console.log(ref);
         res.send(Object.assign(Object.assign({
           id: ref.id,
         }, data), { user: user }));
-      }).catch(err => {
-        console.log(err);
-        res.status(400).send(err.message);
-      });
-    }).catch(err => {
-      console.log(err);
-      res.status(400).send(err);
-    });
+      }).catch(err => res.status(400).send(err.message));
+    }).catch(err => res.status(400).send(err));
   }
 
-  const clearPhotoPromise = id => {
+  const deletePhotoPromise = id => {
     return db.collection('restaurants').doc(id).get()
       .then(doc => {
         if (doc.exists) {
@@ -90,6 +77,7 @@ module.exports = (app, uri, db, bucket) => {
           if (cover_photo && cover_photo.length > 0) {
             const filename = cover_photo.split('/').pop();
             return bucket.file(filename).delete()
+              .catch(err => Promise.resolve())
           }
         }
         return Promise.resolve()
@@ -136,14 +124,13 @@ module.exports = (app, uri, db, bucket) => {
   });
 
   // MARK: - UPDATE restaurant
-  app.post(`${uri}/:restaurantId`, upload.single('cover_photo'), (req, res) => {
+  app.put(`${uri}/:restaurantId`, upload.single('cover_photo'), (req, res) => {
     const { restaurantId } = req.params;
-    const editPromise = data => db.collection('restaurants').doc(restaurantId).set(data, {
-      merge: true,
-    });
     createEditRestaurant(req, res, (data, clearPhoto) => {
-      return clearPhoto ? clearPhotoPromise(restaurantId) : editPromise(data)
-        .then(() => clearPhoto ? editPromise(data) : Promise.resolve())
+      return (clearPhoto ? deletePhotoPromise(restaurantId) : Promise.resolve())
+        .then(() => db.collection('restaurants').doc(restaurantId).set(data, {
+          merge: true,
+        }))
         .then(() => ({
           id: restaurantId,
         }));
@@ -153,7 +140,7 @@ module.exports = (app, uri, db, bucket) => {
   // MARK: - DELETE restaurant
   app.delete(`${uri}/:restaurantId`, (req, res) => {
     const { restaurantId } = req.params;
-    clearPhotoPromise(restaurantId)
+    deletePhotoPromise(restaurantId)
       .then(() => db.collection('restaurants').doc(restaurantId).delete())
       .then(() => res.sendStatus(204))
       .catch(err => {

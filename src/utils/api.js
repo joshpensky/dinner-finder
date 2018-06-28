@@ -21,9 +21,7 @@ const statusResolve = (resolve, status, ok, data) => {
 export default (endpoint, method = 'GET', body = new FormData()) => {
   let options = { method }
   if (method === 'POST' || method === 'PUT') {
-    options = Object.assign(options, {
-      body,
-    })
+    options = Object.assign(options, { body })
   }
   return new Promise((resolve, reject) => {
     fetch(process.env.API_URL + endpoint, options)

@@ -72,6 +72,8 @@ class TextArea extends Component {
       maxHeight: this.props.maxHeight || 250,
     };
 
+    this._isMounted = false;
+    this.targetMessage = this.targetMessage.bind(this);
     this.onResize = this.onResize.bind(this);
     this.onChange = this.onChange.bind(this);
     this.updateMessage = this.updateMessage.bind(this);
@@ -80,12 +82,22 @@ class TextArea extends Component {
     this.updateScroll = this.updateScroll.bind(this);
   }
 
+  setState(nextState, callback) {
+    if (this._isMounted) {
+      super.setState(nextState, callback);
+    }
+  }
+
   componentDidMount() {
+    this._isMounted = true;
     const { value } = this.state;
-    this.onResize(value);
-    window.addEventListener('resize', () => {
-      this.onResize(this.state.value);
-    });
+    this.targetMessage(value);
+    window.addEventListener('resize', this.onResize);
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
+    window.removeEventListener('resize', this.onResize);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -95,9 +107,13 @@ class TextArea extends Component {
   }
 
   onResize(value) {
+    this.targetMessage(this.state.value);
+  }
+
+  targetMessage(value) {
     this.updateMessage({
       target: {
-        value,
+        value: value,
       },
     });
   }

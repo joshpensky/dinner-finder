@@ -219,7 +219,7 @@ class RestaurantEdit extends Component {
       formData.append('user', selectedUser);
       formData.append('cuisines', JSON.stringify(cuisines));
       formData.append('food_options', JSON.stringify(menuItems));
-      api(`/restaurants/${id}`, 'POST', formData)
+      api(`/restaurants/${id}`, 'PUT', formData)
         .then(data => resolve(`/restaurants/${id}`))
         .catch(err => {
           reject(err)
