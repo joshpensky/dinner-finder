@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import store from 'store';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { FormPage, Home, RestaurantCreate, RestaurantDetail, RestaurantEdit, RestaurantList } from 'pages';
-import { Nav, NotFound } from 'components';
+import { Modal, Nav, NotFound } from 'components';
 import { Main } from 'style';
 import 'style/global';
 
@@ -17,6 +17,7 @@ const Root = () => (
   <Provider store={store}>
     <Router>
       <Fragment>
+        <Modal />
         <Nav />
         <Switch>
           <MainRoute exact path="/" component={Home} />

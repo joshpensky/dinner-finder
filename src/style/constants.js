@@ -1,7 +1,7 @@
 /* COLORS */
 export const black = '#000';
-export const blue = '#023CFF';
-export const clearBlue = `${blue}1f`;
+export const blue = '#023cff';
+export const clearBlue = `#dfe8ff`;
 export const white = '#fff';
 export const darkGrayBg = '#ccc';
 export const grayBg = '#eee';
@@ -16,6 +16,7 @@ export const systemFont = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto
 /* SIZES */
 export const borderRadius = '3px';
 export const navHeight = '60px';
+export const bottomPagePadding = '60px';
 export const paddingSm = '15px';
 export const paddingMd = '20px';
 export const paddingLg = '30px';

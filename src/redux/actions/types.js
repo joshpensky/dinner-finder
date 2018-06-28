@@ -1,1 +1,3 @@
-export const UPDATE_HOME_TITLE = 'UPDATE_HOME_TITLE';
+/* modal */
+export const SET_MODAL_CONTENT = 'SET_MODAL_CONTENT';
+export const TOGGLE_MODAL = 'TOGGLE_MODAL';

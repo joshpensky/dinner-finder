@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
-import { borderRadius, darkGrayBg, grayText, screenSm, screenMd, systemFont, white } from 'style/constants';
+import { borderRadius, darkGrayBg, grayText, screenMd, systemFont, white } from 'style/constants';
 
 const Container = styled.ul`
   display: flex;

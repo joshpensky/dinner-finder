@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Cuisines } from 'components';
 import { Link } from 'style';
-import { borderRadius, grayBg, grayText, screenSm, screenMd, screenLg, systemFont } from 'style/constants';
+import { borderRadius, grayBg, screenSm, screenMd, screenLg, systemFont } from 'style/constants';
 
 const Container = styled.div`
   display: flex;

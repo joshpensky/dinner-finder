@@ -1,5 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
+import { connect } from 'react-redux';
+import { toggleModal } from 'actions/modal';
+import PropTypes from 'prop-types';
 import { P } from 'style';
 import { black, blue, borderRadius, clearBlue, clearRed, grayBg, grayText, maxTextWidth, red, white, systemFont } from 'style/constants';
 
@@ -41,7 +44,7 @@ const Header = styled.div`
   font-weight: 600;
   padding: 16px 8px 12px;
   padding-right: 49px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid ${grayBg};
   box-sizing: border-box;
   position: relative;
 `;
@@ -132,21 +135,20 @@ class Modal extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (!nextProps.visible) {
+    const { visible } = nextProps;
+    if (!visible) {
       this.onHide();
-    } else {
-      this.setState({
-        visible: nextProps.visible,
-      });
     }
+    this.setState(Object.assign({
+      actions: nextProps.actions,
+    }, visible ? { visible } : {}));
   }
 
   _hide() {
-    if (this._isMounted) {
-      this.setState({
-        visible: false,
-      });
-    }
+    this.props.toggleModal(false);
+    this.setState({
+      visible: false,
+    });
   }
 
   buttonAction(e) {
@@ -171,8 +173,8 @@ class Modal extends Component {
         <DisablePage visible={visible} />
         <Container visible={visible}>
           <CloseButton onClick={this.onHide} />
-          <Header>Are you sure...</Header>
-          <Description>Are you sure you want to delete Amelia's Taqueria?</Description>
+          <Header>{this.props.title}</Header>
+          <Description>{this.props.description}</Description>
           <Buttons>
             {actions.map((a, i) => (
               <ActionButton key={i} data-index={i} main={a.main} onClick={this.buttonAction}>
@@ -186,4 +188,17 @@ class Modal extends Component {
   }
 }
 
-export default Modal;
+Modal.propTypes = {
+  visible: PropTypes.bool.isRequired,
+  title: PropTypes.string,
+  description: PropTypes.string,
+  actions: PropTypes.arrayOf(PropTypes.shape({
+    text: PropTypes.string.isRequired,
+    main: PropTypes.bool,
+    action: PropTypes.func,
+  })),
+};
+
+export const mapStateToProps = state => state.modal;
+
+export default connect(mapStateToProps, { toggleModal })(Modal);

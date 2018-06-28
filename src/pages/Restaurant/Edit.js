@@ -1,11 +1,13 @@
 import React, { Component, Fragment } from 'react';
 import styled, { css } from 'styled-components';
+import { connect } from 'react-redux';
+import { setModalContent, toggleModal } from 'actions/modal';
 import Helmet from 'react-helmet';
 import { withRouter } from 'react-router-dom';
-import { Cuisines, Header, ImageInput, InputGroup, Modal, Menu, TextArea, TextInput, UserFilters } from 'components';
-import { AndFilter, H1, H3, OptionLink } from 'style';
-import { maxTextWidth } from 'style/constants';
-import { api, getFileExtension, titleCase } from 'utils';
+import { Header, ImageInput, InputGroup, Menu, TextArea, TextInput, UserFilters } from 'components';
+import { AndFilter, OptionLink } from 'style';
+import { bottomPagePadding, maxTextWidth } from 'style/constants';
+import { api, titleCase } from 'utils';
 
 const Form = styled.form`
   display: flex;
@@ -14,7 +16,7 @@ const Form = styled.form`
   width: 100%;
   padding-top: 10px;
   max-width: ${maxTextWidth};
-  padding-bottom: 80px;
+  padding-bottom: ${bottomPagePadding};
 `;
 
 const CuisineFilters = styled.div`
@@ -47,6 +49,7 @@ class RestaurantEdit extends Component {
     this.updateText = this.updateText.bind(this);
     this.updateUser = this.updateUser.bind(this);
     this.updateImage = this.updateImage.bind(this);
+    this.clearImage = this.clearImage.bind(this);
     this.newCuisine = this.newCuisine.bind(this);
     this.updateCuisines = this.updateCuisines.bind(this);
     this.newMenuItem = this.newMenuItem.bind(this);
@@ -54,6 +57,7 @@ class RestaurantEdit extends Component {
     this.saveRestaurant = this.saveRestaurant.bind(this);
     this.deleteRestaurant = this.deleteRestaurant.bind(this);
     this.showDeleteModal = this.showDeleteModal.bind(this);
+    this.showClearPhotoModal = this.showClearPhotoModal.bind(this);
   }
 
   componentDidMount() {
@@ -131,8 +135,14 @@ class RestaurantEdit extends Component {
     this.setState({
       coverPhoto: file,
       coverPhotoDeleted: file === null,
-    }, () => {
-      console.log("DELETED", this.state.coverPhotoDeleted)
+    });
+  }
+
+  clearImage() {
+    this.updateImage({
+      target: {
+        file: null,
+      },
     });
   }
 
@@ -205,7 +215,6 @@ class RestaurantEdit extends Component {
       if (coverPhoto !== null) {
         formData.append('cover_photo', coverPhoto);
       }
-      console.log(coverPhotoDeleted)
       formData.append('cover_photo_deleted', coverPhotoDeleted);
       formData.append('user', selectedUser);
       formData.append('cuisines', JSON.stringify(cuisines));
@@ -218,11 +227,42 @@ class RestaurantEdit extends Component {
     });
   }
 
+  showClearPhotoModal() {
+    return new Promise((resolve, reject) => {
+      this.props.setModalContent(
+        "Are you sure...",
+        `Are you sure you want to clear the cover photo?`,
+        [
+          {
+            text: 'Confirm',
+            main: true,
+            action: () => new Promise((resolve, reject) => {
+              this.coverPhotoInput.clearSelection()
+              resolve();
+            }),
+          },
+          {
+            text: 'Cancel'
+          },
+        ],
+      );
+      this.props.toggleModal(true);
+      reject();
+    });
+  }
+
   showDeleteModal() {
     return new Promise((resolve, reject) => {
-      this.setState({
-        deleteModalVisible: true,
-      }, reject);
+      this.props.setModalContent(
+        "Are you sure...",
+        `Are you sure you want to delete ${this.state.name}?`,
+        [
+          { text: 'Confirm', main: true, action: this.deleteRestaurant },
+          { text: 'Cancel' },
+        ],
+      );
+      this.props.toggleModal(true);
+      reject();
     });
   }
 
@@ -246,10 +286,6 @@ class RestaurantEdit extends Component {
         <Helmet>
           <title>Edit Restaurant</title>
         </Helmet>
-        <Modal visible={deleteModalVisible} actions={[
-          { text: 'Confirm', main: true, action: this.deleteRestaurant },
-          { text: 'Cancel' },
-        ]} />
         <Header title="Edit Restaurant">
           <OptionLink to={`/restaurants/${id}`} onClick={this.saveRestaurant}>Save</OptionLink>
           <OptionLink to="/restaurants" onClick={this.showDeleteModal} destructive>Delete</OptionLink>
@@ -264,7 +300,8 @@ class RestaurantEdit extends Component {
               id="description" value={description} onChange={this.updateText} />
           </InputGroup>
           <InputGroup title="Cover Photo" large hint="Maximum image upload size is 2MB">
-            <ImageInput id="imageInput" maxSize={2} onChange={this.updateImage} preview={coverPhotoPreview} />
+            <ImageInput id="imageInput" maxSize={2} onChange={this.updateImage} preview={coverPhotoPreview}
+              onClear={this.showClearPhotoModal} ref={ref => this.coverPhotoInput = ref} />
           </InputGroup>
           <InputGroup required title="Closer to" large>
             <UserFilters large items={users} onChange={this.updateUser} />
@@ -289,4 +326,4 @@ class RestaurantEdit extends Component {
   }
 }
 
-export default withRouter(RestaurantEdit);
+export default connect(null, { setModalContent, toggleModal })(withRouter(RestaurantEdit));

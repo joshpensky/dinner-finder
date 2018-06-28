@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { black, blue, borderRadius, grayBg, grayText, placeholderColor, systemFont, white } from 'style/constants';
+import { blue, borderRadius, grayBg, grayText, placeholderColor, systemFont, white } from 'style/constants';
 
 const Container = styled.div`
   display: flex;
@@ -18,6 +18,7 @@ const Input = styled.input`
   outline: none;
   border-radius: ${borderRadius};
   border: none;
+  margin: 0;
   background-color: ${grayBg};
   color: ${grayText};
   flex: 1;

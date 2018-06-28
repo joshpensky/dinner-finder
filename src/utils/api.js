@@ -1,6 +1,5 @@
 const parseJSON = response => {
   return new Promise((resolve) => {
-    console.log(response);
     if (response.status === 404) {
       return statusResolve(resolve, 404, false, response.statusText);
     } else if (response.status === 204) {

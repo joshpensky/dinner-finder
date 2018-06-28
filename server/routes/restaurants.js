@@ -72,8 +72,14 @@ module.exports = (app, uri, db, bucket) => {
         res.send(Object.assign(Object.assign({
           id: ref.id,
         }, data), { user: user }));
-      }).catch(err => res.status(400).send(err.message));
-    }).catch(err => res.status(400).send(err));
+      }).catch(err => {
+        console.log(err);
+        res.status(400).send(err.message);
+      });
+    }).catch(err => {
+      console.log(err);
+      res.status(400).send(err);
+    });
   }
 
   // MARK: - GET restaurant list
@@ -118,21 +124,23 @@ module.exports = (app, uri, db, bucket) => {
   // MARK: - UPDATE restaurant
   app.post(`${uri}/:restaurantId`, upload.single('cover_photo'), (req, res) => {
     const { restaurantId } = req.params;
-    createEditRestaurant(req, res, (data, clearPhoto) => {
-      return db.collection('restaurants').doc(restaurantId).get()
-        .then(doc => {
-          if (clearPhoto && doc.exists) {
-            const { cover_photo } = doc.data();
-            if (cover_photo && cover_photo.length > 0) {
-              const filename = cover_photo.split('/').pop();
-              return bucket.file(filename).delete()
-            }
+    const editPromise = data => db.collection('restaurants').doc(restaurantId).set(data, {
+      merge: true,
+    });
+    const clearPhotoPromise = data => db.collection('restaurants').doc(restaurantId).get()
+      .then(doc => {
+        if (doc.exists) {
+          const { cover_photo } = doc.data();
+          if (cover_photo && cover_photo.length > 0) {
+            const filename = cover_photo.split('/').pop();
+            return bucket.file(filename).delete()
           }
-          return Promise.resolve()
-        })
-        .then(() => db.collection('restaurants').doc(restaurantId).set(data, {
-          merge: true,
-        }))
+        }
+        return Promise.resolve()
+      });
+    createEditRestaurant(req, res, (data, clearPhoto) => {
+      return clearPhoto ? clearPhotoPromise(data) : editPromise(data)
+        .then(() => clearPhoto ? editPromise(data) : Promise.resolve())
         .then(() => ({
           id: restaurantId,
         }));

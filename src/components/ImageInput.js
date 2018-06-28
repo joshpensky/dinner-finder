@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { P } from 'style';
-import { blue, borderRadius, darkGrayBg, grayBg, placeholderColor, screenSm, screenMd, systemFont, white } from 'style/constants';
+import { blue, borderRadius, clearRed, grayBg, placeholderColor, red, screenSm, screenMd, systemFont, white } from 'style/constants';
 
 const BYTE_SIZE = 1048576;
 
@@ -15,24 +15,29 @@ const Preview = styled.div`
   display: table;
   width: 100%;
   height: 0;
-  padding-top: calc(100% / 3);
   background-color: ${grayBg};
   background-image: url("${props => props.source}");
   background-size: cover;
   background-position: center;
-  background-repeat: none;
-  border-radius: ${borderRadius};
-  margin-bottom: 15px;
+  background-repeat: no-repeat;
+  border-radius: ${props => props.circle ? '50%' : borderRadius};
+  margin-bottom: ${props => props.circle ? 25 : 15}px;
   position: relative;
   z-index: 1;
 
-  @media (max-width: ${screenMd}) {
-    padding-top: calc(100% / 2);
-  }
+  ${props => (props.square || props.circle) ? css`
+    padding-top: 100%;
+  ` : css`
+    padding-top: calc(100% / 3);
 
-  @media (max-width: ${screenSm}) {
-    padding-top: calc(200% / 3);
-  }
+    @media (max-width: ${screenMd}) {
+      padding-top: calc(100% / 2);
+    }
+
+    @media (max-width: ${screenSm}) {
+      padding-top: calc(200% / 3);
+    }
+  `}
 
   &::before {
     content: '';
@@ -44,7 +49,7 @@ const Preview = styled.div`
     height: calc(100% - 30px);
     border: 2px dashed ${props => props.active ? '#478155' : placeholderColor};
     opacity: ${props => props.source ? 0 : 1};
-    border-radius: ${borderRadius};
+    border-radius: ${props => props.circle ? '50%' : borderRadius};
     transition: border 0.2s ease-out;
     z-index: 3;
   }
@@ -80,7 +85,7 @@ const Hint = styled(P)`
 
 const Input = styled.input.attrs({
   type: 'file',
-  accept: 'image/*'
+  accept: 'image/*',
 })`
   display: none;
 `;
@@ -110,8 +115,7 @@ const Upload = styled.label`
 const Clear = styled.div`
   width: 44px;
   height: 44px;
-  background-color: ${darkGrayBg};
-  color: ${white};
+  background-color: ${clearRed};
   margin-left: 10px;
   border-radius: ${borderRadius};
   position: relative;
@@ -122,7 +126,7 @@ const Clear = styled.div`
     position: absolute;
     top: 50%;
     right: 12px;
-    background-color: ${white};
+    background-color: ${red};
     width: 20px;
     height: 4px;
     transform: translateY(-50%) rotate(45deg);
@@ -133,7 +137,7 @@ const Clear = styled.div`
     position: absolute;
     top: 50%;
     right: 20px;
-    background-color: ${white};
+    background-color: ${red};
     width: 4px;
     height: 20px;
     transform: translateY(-50%) rotate(45deg);
@@ -154,6 +158,7 @@ class ImageInput extends Component {
     };
 
     this.fileHandler = this.fileHandler.bind(this);
+    this.onClear = this.onClear.bind(this);
     this.clearSelection = this.clearSelection.bind(this);
     this.dropTarget = this.dropTarget.bind(this);
     this.dropLeave = this.dropLeave.bind(this);
@@ -226,6 +231,17 @@ class ImageInput extends Component {
     }
   }
 
+  onClear() {
+    const { onClear } = this.props;
+    if (onClear) {
+      onClear().then(this.clearSelection).catch(err => {
+        if (err) console.log(err);
+      });
+    } else {
+      this.clearSelection();
+    }
+  }
+
   clearSelection() {
     this.setState({
       selectedFile: null,
@@ -240,17 +256,16 @@ class ImageInput extends Component {
   }
 
   render() {
-    const active = this.state.dropActive;
-    const { selectedFilePreview } = this.state;
+    const { dropActive: active, selectedFilePreview } = this.state;
     return (
       <Container>
         <Input id={this.props.id} onChange={this.fileHandler} />
-        <Preview source={selectedFilePreview} active={active} innerRef={ref => this.preview = ref}>
+        <Preview source={selectedFilePreview} active={active} circle={this.props.circle} square={this.props.square} innerRef={ref => this.preview = ref}>
           {this.state.isDragUpload && selectedFilePreview.length === 0 && <Hint active={active}>Drag to upload</Hint>}
         </Preview>
         <Buttons>
           <Upload htmlFor={this.props.id}>Upload</Upload>
-          {selectedFilePreview.length > 0 && <Clear onClick={this.clearSelection} />}
+          {selectedFilePreview.length > 0 && <Clear onClick={this.onClear} />}
         </Buttons>
       </Container>
     );

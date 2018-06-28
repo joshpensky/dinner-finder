@@ -29,7 +29,7 @@ class OptionLink extends Component {
           this.props.history.push(dest || to);
         })
         .catch(err => {
-          console.log(err);
+          if (err) console.log(err);
         });
     } else {
       this.props.history.push(to);

@@ -110,7 +110,6 @@ class Restaurant {
     return {
       name: this.name,
       description: this.description,
-      cover_photo: this.cover_photo,
       user: db.doc(this.user),
       cuisines: this.cuisines,
       food_options: this.food_options,

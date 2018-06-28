@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
-import home from 'reducers/home';
+import modal from 'reducers/modal';
 
 export default combineReducers({
-  home,
+  modal,
 });

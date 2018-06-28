@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Header, InputGroup, Restaurant, UserFilters } from 'components';
-import { AddButton, AndFilter, H1, H3, Link } from 'style';
-import { blue, borderRadius, grayBg, systemFont, white } from 'style/constants';
+import { AddButton, AndFilter } from 'style';
+import { borderRadius, grayBg, white } from 'style/constants';
 import { api } from 'utils';
 
 const Container = styled.section`
@@ -37,6 +37,7 @@ const Grid = styled.div`
   flex-wrap: wrap;
   width: 100%;
   background-color: ${white};
+  margin-bottom: -30px;
 
   &::before {
     content: '';

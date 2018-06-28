@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import styled, { css } from 'styled-components';
 import Helmet from 'react-helmet';
-import { Cuisines, Header, ImageInput, InputGroup, Menu, TextArea, TextInput, UserFilters } from 'components';
-import { AndFilter, H1, H3, OptionLink } from 'style';
-import { maxTextWidth } from 'style/constants';
+import { Header, ImageInput, InputGroup, Menu, TextArea, TextInput, UserFilters } from 'components';
+import { AndFilter, OptionLink } from 'style';
+import { bottomPagePadding, maxTextWidth } from 'style/constants';
 import { api, getFileExtension, titleCase } from 'utils';
 
 const Form = styled.form`
@@ -13,7 +13,7 @@ const Form = styled.form`
   width: 100%;
   padding-top: 10px;
   max-width: ${maxTextWidth};
-  padding-bottom: 80px;
+  padding-bottom: ${bottomPagePadding};
 `;
 
 const CuisineFilters = styled.div`

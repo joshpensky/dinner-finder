@@ -117,7 +117,7 @@ class RestaurantDetail extends Component {
         <Header title={name} smallPad>
           <OptionLink to={`/restaurants/${id}/edit`}>Edit</OptionLink>
         </Header>
-        <Cuisines items={cuisines} />
+        <Cuisines large items={cuisines} />
         {description && description.length > 0 && (
           <Description>
             {newlineResolver(description)}
