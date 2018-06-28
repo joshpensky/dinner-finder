@@ -41,7 +41,7 @@ const ProfilePicture = styled.label`
     border-radius: 50%;
     background-color: ${blue};
     transform: translate(-50%, -50%) scale(${props => props.checked ? 1 : 0.8});
-    transition: 0.1s ease-out;
+    transition: 0.2s ease-out;
     z-index: -2;
   }
 `;

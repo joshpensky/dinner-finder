@@ -37,8 +37,9 @@ module.exports = (app, uri, db, bucket) => {
   }
 
   const createEditRestaurant = (req, res, dbPromise) => {
-    const { name, description, user, cuisines, food_options } = req.body;
-    const cover_photo = req.file;
+    const { name, description, user, cover_photo_deleted, cuisines, food_options } = req.body,
+          cover_photo = req.file,
+          clearPhoto = cover_photo_deleted === 'true';
     var restaurant;
     try {
       restaurant = new Restaurant(name, description, cover_photo, user, JSON.parse(cuisines), JSON.parse(food_options));
@@ -63,11 +64,11 @@ module.exports = (app, uri, db, bucket) => {
         : Promise.resolve();
     }).then(url => {
       if (url) {
-        data = Object.assign(data, {
-          cover_photo: url,
-        });
+        data = Object.assign(data, { cover_photo: url });
+      } else if (clearPhoto) {
+        data = Object.assign(data, { cover_photo: '' });
       }
-      dbPromise(data).then(ref => {
+      dbPromise(data, url || clearPhoto).then(ref => {
         res.send(Object.assign(Object.assign({
           id: ref.id,
         }, data), { user: user }));
@@ -117,10 +118,24 @@ module.exports = (app, uri, db, bucket) => {
   // MARK: - UPDATE restaurant
   app.post(`${uri}/:restaurantId`, upload.single('cover_photo'), (req, res) => {
     const { restaurantId } = req.params;
-    createEditRestaurant(req, res, data => {
-      return db.collection('restaurants').doc(restaurantId).set(data, {
-        merge: true,
-      });
+    createEditRestaurant(req, res, (data, clearPhoto) => {
+      return db.collection('restaurants').doc(restaurantId).get()
+        .then(doc => {
+          if (clearPhoto && doc.exists) {
+            const { cover_photo } = doc.data();
+            if (cover_photo && cover_photo.length > 0) {
+              const filename = cover_photo.split('/').pop();
+              return bucket.file(filename).delete()
+            }
+          }
+          return Promise.resolve()
+        })
+        .then(() => db.collection('restaurants').doc(restaurantId).set(data, {
+          merge: true,
+        }))
+        .then(() => ({
+          id: restaurantId,
+        }));
     });
   });
 

@@ -39,6 +39,7 @@ class RestaurantEdit extends Component {
       users: {},
       selectedUser: '',
       coverPhoto: null,
+      coverPhotoDeleted: false,
       coverPhotoPreview: '',
       deleteModalVisible: false,
     };
@@ -126,9 +127,13 @@ class RestaurantEdit extends Component {
   }
 
   updateImage(e) {
+    const { file } = e.target;
     this.setState({
-      coverPhoto: e.target.file,
-    })
+      coverPhoto: file,
+      coverPhotoDeleted: file === null,
+    }, () => {
+      console.log("DELETED", this.state.coverPhotoDeleted)
+    });
   }
 
   newCuisine() {
@@ -178,7 +183,7 @@ class RestaurantEdit extends Component {
 
   saveRestaurant() {
     return new Promise((resolve, reject) => {
-      let { id, name, description, selectedUser, coverPhoto, cuisines, menuItems } = this.state;
+      let { id, name, description, selectedUser, coverPhoto, coverPhotoDeleted, cuisines, menuItems } = this.state;
       name = name.trim();
       description = description.trim();
       cuisines = Object.keys(cuisines).filter(c => cuisines[c]);
@@ -200,6 +205,8 @@ class RestaurantEdit extends Component {
       if (coverPhoto !== null) {
         formData.append('cover_photo', coverPhoto);
       }
+      console.log(coverPhotoDeleted)
+      formData.append('cover_photo_deleted', coverPhotoDeleted);
       formData.append('user', selectedUser);
       formData.append('cuisines', JSON.stringify(cuisines));
       formData.append('food_options', JSON.stringify(menuItems));
