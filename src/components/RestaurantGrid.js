@@ -61,6 +61,7 @@ class RestaurantGrid extends Component {
       selectedUser: '',
     };
 
+    this._isMounted = false;
     this.searchTimeout = null;
     this.updateCuisineFilter = this.updateCuisineFilter.bind(this);
     this.updateUserFilter = this.updateUserFilter.bind(this);
@@ -68,7 +69,14 @@ class RestaurantGrid extends Component {
     this.queryItems = this.queryItems.bind(this);
   }
 
+  setState(nextState, callback = null) {
+    if (this._isMounted) {
+      super.setState(nextState, callback);
+    }
+  }
+
   componentDidMount() {
+    this._isMounted = true;
     const cuisineFetch = api('/cuisines')
       .then(cuisines => {
         let { cuisineFilters } = this.state;
@@ -90,6 +98,10 @@ class RestaurantGrid extends Component {
       .catch(err => {
         console.error(err);
       });
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   updateCuisineFilter(e) {

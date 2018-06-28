@@ -1,14 +1,16 @@
 /* COLORS */
 export const black = '#000';
-export const blue = '#023cff';
-export const clearBlue = `#dfe8ff`;
+export const blue = '#2658ff';
+export const clearBlue = `#d2e0ff`;
 export const white = '#fff';
 export const darkGrayBg = '#ccc';
 export const grayBg = '#eee';
 export const grayText = '#6a6a6a';
 export const placeholderColor = '#bbb';
 export const red = '#ff1c07';
-export const clearRed = `#ffe6e4`;
+export const clearRed = `#ffd5d5`;
+export const green = '#007f1f';
+export const clearGreen = '#e4f6d5';
 
 /* FONT FAMILIES */
 export const systemFont = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';

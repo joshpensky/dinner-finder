@@ -326,4 +326,4 @@ class RestaurantEdit extends Component {
   }
 }
 
-export default connect(null, { setModalContent, toggleModal })(withRouter(RestaurantEdit));
+export default withRouter(connect(null, { setModalContent, toggleModal })(RestaurantEdit));

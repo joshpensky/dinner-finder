@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { blue, borderRadius, grayBg, grayText, placeholderColor, systemFont, white } from 'style/constants';
+import { blue, borderRadius, clearBlue, grayBg, grayText, placeholderColor, systemFont, white } from 'style/constants';
 
 const Container = styled.div`
   display: flex;
@@ -31,8 +31,8 @@ const Input = styled.input`
 
 const Button = styled.div`
   font-family: ${systemFont};
-  background-color: ${blue};
-  color: ${white};
+  background-color: ${clearBlue};
+  color: ${blue};
   font-size: 16px;
   font-weight: 600;
   border-radius: ${borderRadius};

@@ -2,6 +2,9 @@ import styled from 'styled-components';
 import { paddingSm, paddingMd, paddingLg, screenSm, screenMd, screenXl } from 'style/constants';
 
 const Main = styled.main`
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
   width: 100%;
   max-width: ${screenXl};
   flex: 1;

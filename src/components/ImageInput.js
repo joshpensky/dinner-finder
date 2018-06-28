@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
 import { P } from 'style';
-import { blue, borderRadius, clearRed, grayBg, placeholderColor, red, screenSm, screenMd, systemFont, white } from 'style/constants';
+import { blue, borderRadius, clearBlue, clearGreen, clearRed, grayBg, green, placeholderColor, red, screenSm, screenMd, systemFont, white } from 'style/constants';
 
 const BYTE_SIZE = 1048576;
 
@@ -47,7 +47,7 @@ const Preview = styled.div`
     transform: translate(-50%, -50%);
     width: calc(100% - 30px);
     height: calc(100% - 30px);
-    border: 2px dashed ${props => props.active ? '#478155' : placeholderColor};
+    border: 2px dashed ${props => props.active ? green : placeholderColor};
     opacity: ${props => props.source ? 0 : 1};
     border-radius: ${props => props.circle ? '50%' : borderRadius};
     transition: border 0.2s ease-out;
@@ -61,7 +61,7 @@ const Preview = styled.div`
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: #a4ffa7;
+    background-color: ${clearGreen};
     border-radius: ${borderRadius};
     opacity: ${props => props.active ? 0.6 : 0};
     transition: 0.2s ease-out;
@@ -78,7 +78,7 @@ const Hint = styled(P)`
   padding: 0 30px;
   box-sizing: border-box;
   z-index: 2;
-  color: ${props => props.active ? '#478155' : placeholderColor};
+  color: ${props => props.active ? green : placeholderColor};
   transition: 0.2s ease-out;
   text-align: center;
 `;
@@ -100,8 +100,8 @@ const Upload = styled.label`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${blue};
-  color: ${white};
+  background-color: ${clearBlue};
+  color: ${blue};
   border-radius: ${borderRadius};
   flex: 1;
   font-family: ${systemFont};

@@ -1,31 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import styled from 'styled-components';
 import Helmet from 'react-helmet';
-import { Cuisines, Header, Menu, NotFound } from 'components';
-import { H1, H3, Link, OptionLink, P } from 'style';
+import { Cuisines, Header, Menu, NotFound, Section, UserCard } from 'components';
+import { H1, H3, HeroImage, Link, OptionLink, P } from 'style';
 import { borderRadius, grayBg, grayText, maxTextWidth, screenSm, screenMd, systemFont } from 'style/constants';
 import { api, newlineResolver } from 'utils';
-
-const Hero = styled.div`
-  width: 100%;
-  height: 0;
-  padding-top: calc(100% / 3);
-  background-color: ${grayBg};
-  background-image: url("${props => props.source}");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  border-radius: ${borderRadius};
-  margin-bottom: 15px;
-
-  @media (max-width: ${screenMd}) {
-    padding-top: calc(100% / 2);
-  }
-
-  @media (max-width: ${screenSm}) {
-    padding-top: calc(200% / 3);
-  }
-`;
 
 const TitleHeader = styled.div`
   margin-top: 15px;
@@ -54,16 +33,8 @@ const User = styled.div`
 
 const Description = styled(P)`
   margin-top: 15px;
-  max-width: 700px;
+  max-width: ${maxTextWidth};
   color: ${grayText};
-`;
-
-const Section = styled.section`
-  margin-top: 30px;
-
-  h3 {
-    margin-bottom: 10px;
-  }
 `;
 
 class RestaurantDetail extends Component {
@@ -80,9 +51,18 @@ class RestaurantDetail extends Component {
       cuisines: [],
       food_options: [],
     };
+
+    this._isMounted = false;
+  }
+
+  setState(nextState, callback = null) {
+    if (this._isMounted) {
+      super.setState(nextState, callback);
+    }
   }
 
   componentDidMount() {
+    this._isMounted = true;
     api(`/restaurants/${this.state.id}`)
       .then(data => {
         this.setState({
@@ -100,33 +80,40 @@ class RestaurantDetail extends Component {
       });
   }
 
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
   render() {
     const { fetched, notFound, id, name, user, description, cover_photo, cuisines, food_options } = this.state;
-    if (!fetched) {
-      return <Hero />
-    } else if (notFound) {
+    if (notFound) {
       return <NotFound />
     }
-    const userLink = `/users/${user.id}`;
     return (
       <Fragment>
         <Helmet>
           <title>{name}</title>
         </Helmet>
-        <Hero source={String(cover_photo)} />
-        <Header title={name} smallPad>
+        <HeroImage source={cover_photo} />
+        <Header title={name} smallPad loading={!fetched}>
           <OptionLink to={`/restaurants/${id}/edit`}>Edit</OptionLink>
         </Header>
-        <Cuisines large items={cuisines} />
-        {description && description.length > 0 && (
-          <Description>
-            {newlineResolver(description)}
-          </Description>
+        {fetched && (
+          <Fragment>
+            <Cuisines large items={cuisines} />
+            {description && description.length > 0 && (
+              <Description>
+                {newlineResolver(description)}
+              </Description>
+            )}
+            <Section title="Closer to">
+              <UserCard user={user} />
+            </Section>
+            <Section title="Menu Items">
+              <Menu items={food_options} />
+            </Section>
+          </Fragment>
         )}
-        <Section>
-          <H3>Menu Items</H3>
-          <Menu items={food_options} />
-        </Section>
       </Fragment>
     )
   }

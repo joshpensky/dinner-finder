@@ -9,8 +9,10 @@ import NotFound from './NotFound';
 import Restaurant from './Restaurant';
 import RestaurantGrid from './RestaurantGrid';
 import Root from './Root';
+import Section from './Section';
 import TextArea from './TextArea';
 import TextInput from './TextInput';
+import UserCard from './UserCard';
 import UserFilters from './UserFilters';
 
 export {
@@ -25,7 +27,9 @@ export {
   Restaurant,
   RestaurantGrid,
   Root,
+  Section,
   TextArea,
   TextInput,
+  UserCard,
   UserFilters
 };

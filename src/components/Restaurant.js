@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Cuisines } from 'components';
-import { Link } from 'style';
+import { Image, Link } from 'style';
 import { borderRadius, grayBg, screenSm, screenMd, screenLg, systemFont } from 'style/constants';
 
 const Container = styled.div`
@@ -52,6 +52,7 @@ const Container = styled.div`
   }
 `;
 
+
 const CoverPhoto = styled.div`
   width: 100%;
   height: 0;
@@ -59,11 +60,9 @@ const CoverPhoto = styled.div`
   display: table;
   background-color: ${grayBg};
   margin-bottom: 10px;
-  background-image: url("${props => props.source}");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   border-radius: ${borderRadius};
+  overflow: hidden;
+  position: relative;
 `;
 
 const Header = styled.div`
@@ -99,7 +98,9 @@ const Restaurant = props => {
   return (
     <Container>
       <Link to={restaurantUrl}>
-        <CoverPhoto source={cover_photo} />
+        <CoverPhoto>
+          <Image source={cover_photo} />
+        </CoverPhoto>
       </Link>
       <Header>
         <Title to={restaurantUrl}>{name}</Title>

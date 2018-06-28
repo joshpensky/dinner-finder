@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { black, blue, systemFont } from 'style/constants';
+import { black, green, systemFont } from 'style/constants';
 
 const Container = styled.div`
   display: flex;
@@ -39,7 +39,7 @@ const ProfilePicture = styled.label`
     width: ${props => props.large ? 54 : 46}px;
     height: ${props => props.large ? 54 : 46}px;
     border-radius: 50%;
-    background-color: ${blue};
+    background-color: ${green};
     transform: translate(-50%, -50%) scale(${props => props.checked ? 1 : 0.8});
     transition: 0.2s ease-out;
     z-index: -2;
@@ -57,7 +57,7 @@ const NameLabel = styled.label`
   font-size: 16px;
   font-weight: 400;
   text-align: center;
-  color: ${props => props.checked ? blue : black};
+  color: ${props => props.checked ? green : black};
   opacity: ${props => props.checked ? 1 : 0.8};
   margin-top: 6px;
   transition: 0.1s ease-out;

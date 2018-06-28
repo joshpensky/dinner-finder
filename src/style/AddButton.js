@@ -9,6 +9,7 @@ const AddButton = styled(Link)`
   position: relative;
   background-color: ${clearBlue};
   border-radius: ${borderRadius};
+  margin-bottom: 6px;
 
   &::before, &::after {
     content: '';
