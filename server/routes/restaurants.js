@@ -82,6 +82,20 @@ module.exports = (app, uri, db, bucket) => {
     });
   }
 
+  const clearPhotoPromise = id => {
+    return db.collection('restaurants').doc(id).get()
+      .then(doc => {
+        if (doc.exists) {
+          const { cover_photo } = doc.data();
+          if (cover_photo && cover_photo.length > 0) {
+            const filename = cover_photo.split('/').pop();
+            return bucket.file(filename).delete()
+          }
+        }
+        return Promise.resolve()
+      });
+  }
+
   // MARK: - GET restaurant list
   app.get(uri, (req, res) => {
     getFilteredQuery(req, res)
@@ -127,19 +141,8 @@ module.exports = (app, uri, db, bucket) => {
     const editPromise = data => db.collection('restaurants').doc(restaurantId).set(data, {
       merge: true,
     });
-    const clearPhotoPromise = data => db.collection('restaurants').doc(restaurantId).get()
-      .then(doc => {
-        if (doc.exists) {
-          const { cover_photo } = doc.data();
-          if (cover_photo && cover_photo.length > 0) {
-            const filename = cover_photo.split('/').pop();
-            return bucket.file(filename).delete()
-          }
-        }
-        return Promise.resolve()
-      });
     createEditRestaurant(req, res, (data, clearPhoto) => {
-      return clearPhoto ? clearPhotoPromise(data) : editPromise(data)
+      return clearPhoto ? clearPhotoPromise(restaurantId) : editPromise(data)
         .then(() => clearPhoto ? editPromise(data) : Promise.resolve())
         .then(() => ({
           id: restaurantId,
@@ -150,7 +153,8 @@ module.exports = (app, uri, db, bucket) => {
   // MARK: - DELETE restaurant
   app.delete(`${uri}/:restaurantId`, (req, res) => {
     const { restaurantId } = req.params;
-    db.collection('restaurants').doc(restaurantId).delete()
+    clearPhotoPromise(restaurantId)
+      .then(() => db.collection('restaurants').doc(restaurantId).delete())
       .then(() => res.sendStatus(204))
       .catch(err => {
         res.status(500).send("Error deleting document");
