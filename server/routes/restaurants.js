@@ -61,7 +61,6 @@ module.exports = (app, uri, db, bucket) => {
         data = Object.assign(data, { cover_photo: '' });
       }
       dbPromise(data, url || clearPhoto).then(ref => {
-        console.log(ref);
         res.send(Object.assign(Object.assign({
           id: ref.id,
         }, data), { user: user }));

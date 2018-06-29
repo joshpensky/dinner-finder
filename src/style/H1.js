@@ -3,23 +3,10 @@ import styled, { css } from 'styled-components';
 import { loadAnim } from 'style/animations';
 import { black, borderRadius, grayBg, screenSm, systemFont } from 'style/constants';
 
-const Wrapper = styled.div`
-  position: relative;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  ${props => props.loading && css`
-    width: 100%;
-  `}
-`;
-
 const Header1 = styled.h1`
   font-family: ${systemFont};
   font-size: 42px;
   line-height: 44px;
-  opacity: ${props => props.visible ? 1 : 0};
-  transition: opacity 0.5s ease-out;
 
   @media (max-width: ${screenSm}) {
     font-size: 38px;
@@ -28,21 +15,13 @@ const Header1 = styled.h1`
 `;
 
 const Loading = styled.div`
-  width: ${props => props.width}px;
+  width: 100%;
+  max-width: 200px;
   height: 38px;
   margin-bottom: 6px;
   background-color: ${grayBg};
   border-radius: ${borderRadius};
-  ${props => props.loading ? css`
-    position: relative;
-  ` : css`
-    position: absolute;
-    left: 0;
-    bottom: 0;
-  `}
   overflow: hidden;
-  opacity: ${props => props.loading ? 1 : 0};
-  transition: width 0.3s ease-out${props => props.contentLoaded ? ', opacity 0.3s ease-out 0.3s' : ''};
 
   @media (max-width: ${screenSm}) {
     height: 34px;
@@ -75,47 +54,19 @@ class H1 extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      maxWidth: 150,
-      headerWidth: 0,
       showLoader: this.props.loading !== undefined,
-      headerVisible: false,
     };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.children.length === 0) {
-      this.setState({
-        headerWidth: 0,
-        headerVisible: false,
-      });
-    }
   }
 
   render() {
     const { loading } = this.props;
-    const { headerVisible, headerWidth, maxWidth, showLoader } = this.state;
+    const { showLoader } = this.state;
     return (
-      <Wrapper loading={loading} innerRef={ref => this.wrapper = ref}>
-        <Header1
-          visible={!showLoader || (!loading && headerVisible)}
-          innerRef={ref => this.header = ref}>
-          {this.props.children}
-          </Header1>
-        {showLoader && <Loading contentLoaded={this.props.children.length > 0} loading={loading} width={headerWidth > 0 ? headerWidth : maxWidth} />}
-      </Wrapper>
+      <Fragment>
+        {(!showLoader || !loading) && <Header1>{this.props.children}</Header1>}
+        {(showLoader && loading) &&  <Loading />}
+      </Fragment>
     );
-  }
-
-  componentDidUpdate() {
-    if (this.state.headerWidth !== this.header.offsetWidth) {
-      this.setState({
-        headerWidth: this.header.offsetWidth,
-      }, () => {
-        setTimeout(() => {
-          this.setState({ headerVisible: true })
-        }, 300);
-      });
-    }
   }
 }
 

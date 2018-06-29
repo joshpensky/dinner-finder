@@ -9,6 +9,10 @@ const Container = styled.div`
   align-items: flex-end;
   padding-bottom: ${props => props.smallPad ? 10 : 15}px;
   width: 100%;
+
+  h1 {
+    flex: 1;
+  }
 `;
 
 const Options = styled.div`

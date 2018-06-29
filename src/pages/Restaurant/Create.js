@@ -2,8 +2,8 @@ import React, { Component, Fragment } from 'react';
 import styled, { css } from 'styled-components';
 import Helmet from 'react-helmet';
 import { Header, ImageInput, InputGroup, Menu, TextArea, TextInput, UserFilters } from 'components';
-import { AndFilter, OptionLink } from 'style';
-import { bottomPagePadding, maxTextWidth } from 'style/constants';
+import { AndFilter, OptionLink, P } from 'style';
+import { bottomPagePadding, maxTextWidth, red } from 'style/constants';
 import { api, getFileExtension, titleCase } from 'utils';
 
 const Form = styled.form`
@@ -24,6 +24,11 @@ const CuisineFilters = styled.div`
   margin-bottom: -5px;
 `;
 
+const Error = styled(P)`
+  color: ${red};
+  margin-bottom: 15px;
+`;
+
 class RestaurantCreate extends Component {
   constructor(props) {
     super(props);
@@ -37,6 +42,14 @@ class RestaurantCreate extends Component {
       users: {},
       selectedUser: '',
       selectedImage: null,
+      foundError: false,
+      errors: {
+        name: '',
+        coverPhoto: '',
+        user: '',
+        cuisines: '',
+        menuItems: '',
+      },
     };
 
     this.updateText = this.updateText.bind(this);
@@ -47,6 +60,7 @@ class RestaurantCreate extends Component {
     this.newMenuItem = this.newMenuItem.bind(this);
     this.removeMenuItem = this.removeMenuItem.bind(this);
     this.saveRestaurant = this.saveRestaurant.bind(this);
+    this.imageErrorHandler = this.imageErrorHandler.bind(this);
   }
 
   componentDidMount() {
@@ -77,11 +91,10 @@ class RestaurantCreate extends Component {
     let { id, value } = e.target;
     let { state } = this;
     state[id] = value;
-    this.setState(state);
   }
 
   updateUser(e) {
-    let { selectedUser, users } = this.state,
+    let { selectedUser, users, errors } = this.state,
         { value } = e.target;
     Object.keys(users).forEach(u => {
       users[u].checked = u === value;
@@ -93,9 +106,18 @@ class RestaurantCreate extends Component {
   }
 
   updateImage(e) {
+    let { errors } = this.state;
+    errors.coverPhoto = '';
     this.setState({
+      errors,
       selectedImage: e.target.file,
     })
+  }
+
+  imageErrorHandler(err) {
+    let { errors } = this.state;
+    errors.coverPhoto = err;
+    this.setState({ errors });
   }
 
   newCuisine() {
@@ -149,17 +171,19 @@ class RestaurantCreate extends Component {
       name = name.trim();
       description = description.trim();
       cuisines = Object.keys(cuisines).filter(c => cuisines[c]);
-      if (name.length === 0) {
-        return reject();
-      }
-      if (selectedUser.length === 0) {
-        return reject();
-      }
-      if (cuisines.length < 1) {
-        return reject();
-      }
-      if (menuItems.length < 1) {
-        return reject();
+      var errors = Object.assign({}, this.state.errors);
+      let foundError = (name.length === 0) || false;
+      errors.name = (name.length === 0) ? 'You must enter a name.' : '';
+      foundError = (selectedUser.length === 0) || foundError;
+      errors.user = (selectedUser.length === 0) ? 'You must select a user.' : '';
+      foundError = (cuisines.length < 1) || foundError;
+      errors.cuisines = (cuisines.length < 1) ? 'You must select at least one cuisine.' : '';
+      foundError = (menuItems.length < 1) || foundError;
+      errors.menuItems = (menuItems.length < 1) ? 'You must enter at least one menu item.' : '';
+      errors.coverPhoto = '';
+      if (errors !== this.state.errors) {
+        this.setState({ foundError, errors });
+        if (foundError) return reject();
       }
       const formData = new FormData();
       formData.append('name', name);
@@ -180,7 +204,7 @@ class RestaurantCreate extends Component {
   }
 
   render() {
-    const { name, description, users, newCuisine, cuisines, newMenuItem, menuItems } = this.state;
+    const { foundError, errors, name, description, users, newCuisine, cuisines, newMenuItem, menuItems } = this.state;
     return (
       <Fragment>
         <Helmet>
@@ -190,7 +214,8 @@ class RestaurantCreate extends Component {
           <OptionLink to="/restaurants" onClick={this.saveRestaurant}>Save</OptionLink>
         </Header>
         <Form>
-          <InputGroup required htmlFor="name" title="Name" large>
+          {foundError && <Error>Please resolve the errors below before saving.</Error>}
+          <InputGroup required htmlFor="name" title="Name" large showError={errors.name.length > 0} errorMessage={errors.name}>
             <TextInput id="name" value={name} placeholder="TGI Fridays" autoComplete="off"
               inputRef={ref => this.nameInput = ref} tabIndex="1" onChange={this.updateText} />
           </InputGroup>
@@ -198,13 +223,13 @@ class RestaurantCreate extends Component {
             <TextArea tabIndex="2" placeholder="Former home of Guy Fieri"
               id="description" value={description} onChange={this.updateText} />
           </InputGroup>
-          <InputGroup title="Cover Photo" large hint="Maximum image upload size is 2MB">
-            <ImageInput id="imageInput" maxSize={2} onChange={this.updateImage} />
+          <InputGroup title="Cover Photo" large hint="Maximum image upload size is 2MB" showError={errors.coverPhoto.length > 0} errorMessage={errors.coverPhoto}>
+            <ImageInput id="imageInput" maxSize={2} onChange={this.updateImage} onError={this.imageErrorHandler} />
           </InputGroup>
-          <InputGroup required title="Closer to" large>
+          <InputGroup required title="Closer to" large showError={errors.user.length > 0} errorMessage={errors.user}>
             <UserFilters large items={users} onChange={this.updateUser} />
           </InputGroup>
-          <InputGroup required title="Cuisines" large>
+          <InputGroup required title="Cuisines" large showError={errors.cuisines.length > 0} errorMessage={errors.cuisines}>
             <TextInput id="newCuisine" value={newCuisine} placeholder="Southern, Korean, Thai, ..." padBottom
               submitText="Add" tabIndex="3" onChange={this.updateText} onSubmit={this.newCuisine} />
             <CuisineFilters>
@@ -213,7 +238,7 @@ class RestaurantCreate extends Component {
               ))}
             </CuisineFilters>
           </InputGroup>
-          <InputGroup required title="Menu Items" large>
+          <InputGroup required title="Menu Items" large showError={errors.menuItems.length > 0} errorMessage={errors.menuItems}>
             <TextInput id="newMenuItem" value={newMenuItem} placeholder="Fried Chicken, Apple Pie, ..." padBottom
               submitText="Add" tabIndex="4" onChange={this.updateText} onSubmit={this.newMenuItem} />
             <Menu items={menuItems} onRemove={this.removeMenuItem} />

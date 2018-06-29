@@ -217,17 +217,27 @@ class ImageInput extends Component {
 
   fileHandler(e) {
     const file = e.target.files[0];
-    if (file.type.includes('image/') && file.size <= this.state.maxSize) {
-      this.setState({
-        selectedFile: file,
-        selectedFilePreview: URL.createObjectURL(file),
-      }, () => {
-        this.props.onChange({
-          target: {
-            file: this.state.selectedFile,
-          },
+    let errorMessage = '';
+    if (file.type.includes('image/')) {
+      if (file.size <= this.state.maxSize) {
+        this.setState({
+          selectedFile: file,
+          selectedFilePreview: URL.createObjectURL(file),
+        }, () => {
+          this.props.onChange({
+            target: {
+              file: this.state.selectedFile,
+            },
+          });
         });
-      });
+      } else {
+        errorMessage = `Image size is too large, max is ${this.props.maxSize}MB.`
+      }
+    } else {
+      errorMessage = 'You may only upload images.'
+    }
+    if (errorMessage && this.props.onError) {
+      this.props.onError(errorMessage);
     }
   }
 

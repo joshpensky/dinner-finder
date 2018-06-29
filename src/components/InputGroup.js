@@ -1,6 +1,6 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
-import { red, systemFont } from 'style/constants';
+import { black, red, systemFont } from 'style/constants';
 
 const Container = styled.div`
   display: flex;
@@ -30,20 +30,28 @@ const Label = styled.label`
   `}
 `;
 
-const Hint = styled.p`
+const Hint = styled.p.attrs({
+  className: 'hint',
+})`
   font-family: ${systemFont};
   font-size: ${props => props.large ? 18 : 16}px;
   font-weight: 400;
   opacity: 0.8;
-  margin-bottom: ${props => props.large ? 10 : 12}px;
+  margin-bottom: 12px;
+  color: ${props => props.error ? red : black};
+
+  & + .hint {
+    margin-top: -4px;
+  }
 `
 
 const InputGroup = props => (
   <Container large={props.large}>
-    <Label htmlFor={props.htmlFor} required={props.required} large={props.large} hint={props.hint}>
+    <Label htmlFor={props.htmlFor} required={props.required} large={props.large} hint={props.hint || props.errorMessage}>
       {props.title}
     </Label>
     {props.hint && <Hint>{props.hint}</Hint>}
+    {props.errorMessage && props.showError && <Hint error>{props.errorMessage}</Hint>}
     {props.children}
   </Container>
 );

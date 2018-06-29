@@ -5,8 +5,8 @@ import { setModalContent, toggleModal } from 'actions/modal';
 import Helmet from 'react-helmet';
 import { withRouter } from 'react-router-dom';
 import { Header, ImageInput, InputGroup, Menu, NotFound, TextArea, TextInput, UserFilters } from 'components';
-import { AndFilter, OptionLink } from 'style';
-import { bottomPagePadding, maxTextWidth } from 'style/constants';
+import { AndFilter, OptionLink, P } from 'style';
+import { bottomPagePadding, maxTextWidth, red } from 'style/constants';
 import { api, titleCase } from 'utils';
 
 const Form = styled.form`
@@ -25,6 +25,11 @@ const CuisineFilters = styled.div`
   flex-wrap: wrap;
   align-items: flex-start;
   margin-bottom: -5px;
+`;
+
+const Error = styled(P)`
+  color: ${red};
+  margin-bottom: 15px;
 `;
 
 class RestaurantEdit extends Component {
@@ -46,6 +51,14 @@ class RestaurantEdit extends Component {
       coverPhotoDeleted: false,
       coverPhotoPreview: '',
       deleteModalVisible: false,
+      foundError: false,
+      errors: {
+        name: '',
+        coverPhoto: '',
+        user: '',
+        cuisines: '',
+        menuItems: '',
+      },
     };
 
     this.updateText = this.updateText.bind(this);
@@ -60,6 +73,7 @@ class RestaurantEdit extends Component {
     this.deleteRestaurant = this.deleteRestaurant.bind(this);
     this.showDeleteModal = this.showDeleteModal.bind(this);
     this.showClearPhotoModal = this.showClearPhotoModal.bind(this);
+    this.imageErrorHandler = this.imageErrorHandler.bind(this);
   }
 
   componentDidMount() {
@@ -129,11 +143,20 @@ class RestaurantEdit extends Component {
   }
 
   updateImage(e) {
+    let { errors } = this.state;
+    errors.coverPhoto = '';
     const { file } = e.target;
     this.setState({
+      errors,
       coverPhoto: file,
       coverPhotoDeleted: file === null,
     });
+  }
+
+  imageErrorHandler(err) {
+    let { errors } = this.state;
+    errors.coverPhoto = err;
+    this.setState({ errors });
   }
 
   clearImage() {
@@ -195,17 +218,19 @@ class RestaurantEdit extends Component {
       name = name.trim();
       description = description.trim();
       cuisines = Object.keys(cuisines).filter(c => cuisines[c]);
-      if (name.length === 0) {
-        return reject();
-      }
-      if (selectedUser.length === 0) {
-        return reject();
-      }
-      if (cuisines.length < 1) {
-        return reject();
-      }
-      if (menuItems.length < 1) {
-        return reject();
+      var errors = Object.assign({}, this.state.errors);
+      let foundError = (name.length === 0) || false;
+      errors.name = (name.length === 0) ? 'You must enter a name.' : '';
+      foundError = (selectedUser.length === 0) || foundError;
+      errors.user = (selectedUser.length === 0) ? 'You must select a user.' : '';
+      foundError = (cuisines.length < 1) || foundError;
+      errors.cuisines = (cuisines.length < 1) ? 'You must select at least one cuisine.' : '';
+      foundError = (menuItems.length < 1) || foundError;
+      errors.menuItems = (menuItems.length < 1) ? 'You must enter at least one menu item.' : '';
+      errors.coverPhoto = '';
+      if (errors !== this.state.errors) {
+        this.setState({ foundError, errors });
+        if (foundError) return reject();
       }
       const formData = new FormData();
       formData.append('name', name);
@@ -278,7 +303,8 @@ class RestaurantEdit extends Component {
   }
 
   render() {
-    const { fetched, notFound, deleteModalVisible, id, name, description, users, newCuisine, cuisines, newMenuItem, menuItems, coverPhotoPreview } = this.state;
+    const { fetched, notFound, foundError, errors, deleteModalVisible } = this.state;
+    const { id, name, description, users, newCuisine, cuisines, newMenuItem, menuItems, coverPhotoPreview} = this.state;
     if (notFound) {
       return <NotFound />
     }
@@ -292,7 +318,8 @@ class RestaurantEdit extends Component {
           <OptionLink disabled={!fetched} to="/restaurants" onClick={this.showDeleteModal} destructive>Delete</OptionLink>
         </Header>
         <Form>
-          <InputGroup required htmlFor="name" title="Name" large>
+          {foundError && <Error>Please resolve the errors below before saving.</Error>}
+          <InputGroup required htmlFor="name" title="Name" large showError={errors.name.length > 0} errorMessage={errors.name}>
             <TextInput id="name" value={name} placeholder="TGI Fridays" autoComplete="off"
               inputRef={ref => this.nameInput = ref} tabIndex="1" onChange={this.updateText} />
           </InputGroup>
@@ -300,14 +327,14 @@ class RestaurantEdit extends Component {
             <TextArea tabIndex="2" placeholder="Former home of Guy Fieri"
               id="description" value={description} onChange={this.updateText} />
           </InputGroup>
-          <InputGroup title="Cover Photo" large hint="Maximum image upload size is 2MB">
+          <InputGroup title="Cover Photo" large hint="Maximum image upload size is 2MB" showError={errors.coverPhoto.length > 0} errorMessage={errors.coverPhoto}>
             <ImageInput id="imageInput" maxSize={2} onChange={this.updateImage} preview={coverPhotoPreview}
-              onClear={this.showClearPhotoModal} ref={ref => this.coverPhotoInput = ref} />
+              onClear={this.showClearPhotoModal} ref={ref => this.coverPhotoInput = ref} onError={this.imageErrorHandler} />
           </InputGroup>
-          <InputGroup required title="Closer to" large>
+          <InputGroup required title="Closer to" large showError={errors.user.length > 0} errorMessage={errors.user}>
             <UserFilters large items={users} onChange={this.updateUser} />
           </InputGroup>
-          <InputGroup required title="Cuisines" large>
+          <InputGroup required title="Cuisines" large showError={errors.cuisines.length > 0} errorMessage={errors.cuisines}>
             <TextInput id="newCuisine" value={newCuisine} placeholder="Southern, Korean, Thai, ..." padBottom
               submitText="Add" tabIndex="3" onChange={this.updateText} onSubmit={this.newCuisine} />
             <CuisineFilters>
@@ -316,7 +343,7 @@ class RestaurantEdit extends Component {
               ))}
             </CuisineFilters>
           </InputGroup>
-          <InputGroup required title="Menu Items" large>
+          <InputGroup required title="Menu Items" large showError={errors.menuItems.length > 0} errorMessage={errors.menuItems}>
             <TextInput id="newMenuItem" value={newMenuItem} placeholder="Fried Chicken, Apple Pie, ..." padBottom
               submitText="Add" tabIndex="4" onChange={this.updateText} onSubmit={this.newMenuItem} />
             <Menu items={menuItems} onRemove={this.removeMenuItem} />
