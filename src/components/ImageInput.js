@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
 import { P } from 'style';
-import { blue, borderRadius, clearBlue, clearGreen, clearRed, grayBg, green, placeholderColor, red, screenSm, screenMd, systemFont, white } from 'style/constants';
+import { blue, borderRadius, clearGreen, grayBg, green, placeholderColor, red, screenSm, screenMd, systemFont, white } from 'style/constants';
 
 const BYTE_SIZE = 1048576;
 
@@ -100,8 +100,8 @@ const Upload = styled.label`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${clearBlue};
-  color: ${blue};
+  background-color: ${blue};
+  color: ${white};
   border-radius: ${borderRadius};
   flex: 1;
   font-family: ${systemFont};
@@ -115,7 +115,7 @@ const Upload = styled.label`
 const Clear = styled.div`
   width: 44px;
   height: 44px;
-  background-color: ${clearRed};
+  background-color: ${red};
   margin-left: 10px;
   border-radius: ${borderRadius};
   position: relative;
@@ -126,7 +126,7 @@ const Clear = styled.div`
     position: absolute;
     top: 50%;
     right: 12px;
-    background-color: ${red};
+    background-color: ${white};
     width: 20px;
     height: 4px;
     transform: translateY(-50%) rotate(45deg);
@@ -137,7 +137,7 @@ const Clear = styled.div`
     position: absolute;
     top: 50%;
     right: 20px;
-    background-color: ${red};
+    background-color: ${white};
     width: 4px;
     height: 20px;
     transform: translateY(-50%) rotate(45deg);

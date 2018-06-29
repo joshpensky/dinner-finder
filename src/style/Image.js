@@ -39,10 +39,10 @@ class Image extends Component {
 
   componentWillReceiveProps(nextProps) {
     let { source } = nextProps;
-    if (source && source.length > 0 && source !== this.state.source) {
+    if (source !== this.state.source) {
       this.setState({
         source,
-        loadElement: true,
+        loadElement: source && source.length > 0,
         backgroundVisible: false,
       });
     }

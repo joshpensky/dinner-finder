@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { setModalContent, toggleModal } from 'actions/modal';
 import Helmet from 'react-helmet';
 import { withRouter } from 'react-router-dom';
-import { Header, ImageInput, InputGroup, Menu, TextArea, TextInput, UserFilters } from 'components';
+import { Header, ImageInput, InputGroup, Menu, NotFound, TextArea, TextInput, UserFilters } from 'components';
 import { AndFilter, OptionLink } from 'style';
 import { bottomPagePadding, maxTextWidth } from 'style/constants';
 import { api, titleCase } from 'utils';
@@ -31,6 +31,8 @@ class RestaurantEdit extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      fetched: false,
+      notFound: false,
       id: this.props.match.params.id,
       name: '',
       description: '',
@@ -79,35 +81,31 @@ class RestaurantEdit extends Component {
         this.setState({ users });
       });
     Promise.all([cuisineFetch, userFetch])
-      .then(() => {
-        api(`/restaurants/${this.state.id}`)
-          .then(data => {
-            let { users, cuisines } = this.state;
-            data.cuisines.forEach(c => cuisines[c] = true);
-            let userId = data.user.id;
-            Object.keys(users).forEach(u => {
-              users[u].checked = u === userId;
-            });
-            this.setState({
-              name: data.name,
-              description: data.description || '',
-              selectedUser: userId,
-              cuisines,
-              menuItems: data.food_options,
-              coverPhotoPreview: data.cover_photo,
-            });
-          })
-          .catch(err => {
-            if (err.status === 404) {
-              this.setState({
-                fetched: true,
-                notFound: true,
-              });
-            };
-          });
+      .then(() => api(`/restaurants/${this.state.id}`))
+      .then(data => {
+        let { users, cuisines } = this.state;
+        data.cuisines.forEach(c => cuisines[c] = true);
+        let userId = data.user.id;
+        Object.keys(users).forEach(u => {
+          users[u].checked = u === userId;
+        });
+        this.setState({
+          fetched: true,
+          name: data.name,
+          description: data.description || '',
+          selectedUser: userId,
+          cuisines,
+          menuItems: data.food_options,
+          coverPhotoPreview: data.cover_photo,
+        });
       })
       .catch(err => {
-        console.error(err);
+        if (err.status === 404) {
+          this.setState({
+            fetched: true,
+            notFound: true,
+          });
+        };
       });
   }
 
@@ -280,15 +278,18 @@ class RestaurantEdit extends Component {
   }
 
   render() {
-    const { deleteModalVisible, id, name, description, users, newCuisine, cuisines, newMenuItem, menuItems, coverPhotoPreview } = this.state;
+    const { fetched, notFound, deleteModalVisible, id, name, description, users, newCuisine, cuisines, newMenuItem, menuItems, coverPhotoPreview } = this.state;
+    if (notFound) {
+      return <NotFound />
+    }
     return (
       <Fragment>
         <Helmet>
           <title>Edit Restaurant</title>
         </Helmet>
         <Header title="Edit Restaurant">
-          <OptionLink to={`/restaurants/${id}`} onClick={this.saveRestaurant}>Save</OptionLink>
-          <OptionLink to="/restaurants" onClick={this.showDeleteModal} destructive>Delete</OptionLink>
+          <OptionLink disabled={!fetched} to={`/restaurants/${id}`} onClick={this.saveRestaurant}>Save</OptionLink>
+          <OptionLink disabled={!fetched} to="/restaurants" onClick={this.showDeleteModal} destructive>Delete</OptionLink>
         </Header>
         <Form>
           <InputGroup required htmlFor="name" title="Name" large>

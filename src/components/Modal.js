@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 import { toggleModal } from 'actions/modal';
 import PropTypes from 'prop-types';
 import { P } from 'style';
-import { black, blue, borderRadius, clearBlue, clearRed, grayBg, grayText, maxTextWidth, red, white, systemFont } from 'style/constants';
+import { black, blue, borderRadius, grayBg, grayText, maxTextWidth, red, white, systemFont } from 'style/constants';
+import { domainToASCII } from 'url';
 
 const DisablePage = styled.div`
   content: '';
@@ -25,7 +26,7 @@ const Container = styled.div`
   padding: 0 14px;
   position: fixed;
   left: 50%;
-  top: 15%;
+  top: 125px;
   width: calc(100% - 30px);
   box-sizing: border-box;
   max-width: ${maxTextWidth};
@@ -55,7 +56,7 @@ const CloseButton = styled.div`
   position: absolute;
   top: 0;
   right: 0;
-  background-color: ${clearRed};
+  background-color: ${red};
   border-top-right-radius: ${borderRadius};
   z-index: 1;
   cursor: pointer;
@@ -65,7 +66,7 @@ const CloseButton = styled.div`
     position: absolute;
     top: 50%;
     right: 14px;
-    background-color: ${red};
+    background-color: ${white};
     width: 20px;
     height: 4px;
     transform: translateY(-50%) rotate(45deg);
@@ -76,7 +77,7 @@ const CloseButton = styled.div`
     position: absolute;
     top: 50%;
     right: 22px;
-    background-color: ${red};
+    background-color: ${white};
     width: 4px;
     height: 20px;
     transform: translateY(-50%) rotate(45deg);
@@ -103,8 +104,8 @@ const ActionButton = styled.div`
   font-weight: 600;
   padding: 8px 16px;
   border-radius: ${borderRadius};
-  color: ${props => props.main ? blue : grayText};
-  background-color: ${props => props.main ? clearBlue : grayBg};
+  color: ${props => props.main ? white : grayText};
+  background-color: ${props => props.main ? blue : grayBg};
   margin-left: 6px;
 
   &:first-child {
@@ -121,9 +122,19 @@ class Modal extends Component {
     };
 
     this._isMounted = false;
+    this._topScroll = 0;
     this._hide = this._hide.bind(this);
     this.buttonAction = this.buttonAction.bind(this);
     this.onHide = this.onHide.bind(this);
+    this.stopBodyScroll = this.stopBodyScroll.bind(this);
+  }
+
+  setState(nextState, callback) {
+    let updateBody = this.state.visible !== nextState.visible;
+    super.setState(nextState, () => {
+      if (callback) callback();
+      if (updateBody) this.stopBodyScroll();
+    });
   }
 
   componentDidMount() {
@@ -132,6 +143,10 @@ class Modal extends Component {
   
   componentWillUnmount() {
     this._isMounted = false;
+    if (document.body.classList.contains('modal-open')) {
+      document.body.classList.remove('modal-open');
+      document.body.style.top = `0px`;
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -142,6 +157,18 @@ class Modal extends Component {
     this.setState(Object.assign({
       actions: nextProps.actions,
     }, visible ? { visible } : {}));
+  }
+
+  stopBodyScroll() {
+    if (this.state.visible) {
+      this._topScroll = Math.max(0, window.scrollY);
+      document.body.classList.add('modal-open');
+      document.body.style.top = `-${this._topScroll}px`;
+    } else {
+      document.body.classList.remove('modal-open');
+      document.body.style.top = `0px`;
+      window.scrollTo(0, this._topScroll);
+    }
   }
 
   _hide() {

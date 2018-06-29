@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { black, borderRadius, clearGreen, grayBg, green, systemFont, white } from 'style/constants';
+import { black, blue, borderRadius, grayBg, systemFont, white } from 'style/constants';
 
 const Wrapper = styled.div`
   margin-right: ${props => props.large ? 7: 5}px;
@@ -37,8 +37,8 @@ const Label = styled.label`
   }*/
 
   ${Checkbox}:checked + & {
-    background-color: ${clearGreen};
-    color: ${green};
+    background-color: ${blue};
+    color: ${white};
   }
 `;
 

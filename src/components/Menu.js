@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
-import { borderRadius, clearRed, red, darkGrayBg, grayText, screenMd, systemFont, white } from 'style/constants';
+import { borderRadius, red, darkGrayBg, grayText, screenMd, systemFont, white } from 'style/constants';
 
 const Container = styled.ul`
   display: flex;
@@ -60,7 +60,7 @@ const RemoveButton = styled.div`
   top: 0;
   right: 0;
   cursor: pointer;
-  background-color: ${clearRed};
+  background-color: ${red};
   border-radius: ${borderRadius};
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
@@ -70,7 +70,7 @@ const RemoveButton = styled.div`
     position: absolute;
     top: 50%;
     right: 12px;
-    background-color: ${red};
+    background-color: ${white};
     width: 20px;
     height: 4px;
     transform: translateY(-50%) rotate(45deg);
@@ -81,7 +81,7 @@ const RemoveButton = styled.div`
     position: absolute;
     top: 50%;
     right: 20px;
-    background-color: ${red};
+    background-color: ${white};
     width: 4px;
     height: 20px;
     transform: translateY(-50%) rotate(45deg);

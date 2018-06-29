@@ -1,13 +1,13 @@
 import styled from 'styled-components';
 import Link from './Link';
-import { blue, borderRadius, clearBlue } from 'style/constants';
+import { blue, borderRadius, white } from 'style/constants';
 
 const AddButton = styled(Link)`
   width: 36px;
   height: 30px;
   cursor: pointer;
   position: relative;
-  background-color: ${clearBlue};
+  background-color: ${blue};
   border-radius: ${borderRadius};
   margin-bottom: 6px;
 
@@ -17,7 +17,7 @@ const AddButton = styled(Link)`
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    background-color: ${blue};
+    background-color: ${white};
   }
 
   &::before {

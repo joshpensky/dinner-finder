@@ -1,18 +1,20 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
-import { blue, borderRadius, clearBlue, clearRed, red, systemFont } from 'style/constants';
+import { blue, borderRadius, red, systemFont, white } from 'style/constants';
 
-const Content = styled.p`
+const Content = styled.div`
   font-family: ${systemFont};
   font-size: 16px;
   font-weight: 600;
-  color: ${props => props.destructive ? red : blue};
-  cursor: pointer;
+  color: ${white};
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
   padding: 6px 12px;
-  background-color: ${props => props.destructive ? clearRed : clearBlue};
+  background-color: ${props => props.destructive ? red : blue};
   border-radius: ${borderRadius};
   margin-bottom: 6px;
+  opacity: ${props => props.disabled ? 0.4 : 1};
+  flex-shrink: 0;
 `;
 
 class OptionLink extends Component {
@@ -22,23 +24,25 @@ class OptionLink extends Component {
   }
 
   handlePress() {
-    const { onClick, to }  = this.props;
-    if (onClick) {
-      onClick()
-        .then(dest => {
-          this.props.history.push(dest || to);
-        })
-        .catch(err => {
-          if (err) console.log(err);
-        });
-    } else {
-      this.props.history.push(to);
+    if (!this.props.disabled) {
+      const { onClick, to }  = this.props;
+      if (onClick) {
+        onClick()
+          .then(dest => {
+            this.props.history.push(dest || to);
+          })
+          .catch(err => {
+            if (err) console.log(err);
+          });
+      } else {
+        this.props.history.push(to);
+      }
     }
   }
 
   render() {
     return (
-      <Content onClick={this.handlePress} destructive={this.props.destructive}>
+      <Content onClick={this.handlePress} destructive={this.props.destructive} disabled={this.props.disabled}>
         {this.props.children}
       </Content>
     );

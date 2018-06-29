@@ -19,7 +19,6 @@ const Options = styled.div`
   align-items: flex-end;
   justify-content: flex-end
   margin-bottom: calc(4px - 6px);
-  margin-left: 10px;
 
   & * {
     margin-left: 6px;

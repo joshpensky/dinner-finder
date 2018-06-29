@@ -19,6 +19,7 @@ const Title = styled.h1`
   font-size: 144px;
   line-height: 1;
   margin-bottom: 5px;
+  font-weight: 800;
 
   @media (max-width: ${screenSm}) {
     font-size: 112px;
