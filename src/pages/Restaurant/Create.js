@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import styled, { css } from 'styled-components';
 import Helmet from 'react-helmet';
+import { Prompt } from 'react-router-dom';
 import { Header, ImageInput, InputGroup, Menu, TextArea, TextInput, UserFilters } from 'components';
 import { AndFilter, OptionLink, P } from 'style';
 import { bottomPagePadding, maxTextWidth, red } from 'style/constants';
@@ -26,6 +27,7 @@ const CuisineFilters = styled.div`
 
 const Error = styled(P)`
   color: ${red};
+  margin-top: -10px;
   margin-bottom: 15px;
 `;
 
@@ -50,6 +52,7 @@ class RestaurantCreate extends Component {
         cuisines: '',
         menuItems: '',
       },
+      unsavedChanges: false,
     };
 
     this.updateText = this.updateText.bind(this);
@@ -64,7 +67,6 @@ class RestaurantCreate extends Component {
   }
 
   componentDidMount() {
-    this.nameInput.focus();
     const cuisineFetch = api('/cuisines')
       .then(cuisinesList => {
         let { cuisines } = this.state;
@@ -87,10 +89,12 @@ class RestaurantCreate extends Component {
       });
   }
 
-  updateText(e) {
+  updateText(e, unsavedChanges = true) {
     let { id, value } = e.target;
-    let { state } = this;
-    state[id] = value;
+    this.setState({
+      unsavedChanges,
+      [id]: value,
+    });
   }
 
   updateUser(e) {
@@ -100,6 +104,7 @@ class RestaurantCreate extends Component {
       users[u].checked = u === value;
     });
     this.setState({
+      unsavedChanges: true,
       users,
       selectedUser: value,
     });
@@ -109,6 +114,7 @@ class RestaurantCreate extends Component {
     let { errors } = this.state;
     errors.coverPhoto = '';
     this.setState({
+      unsavedChanges: true,
       errors,
       selectedImage: e.target.file,
     })
@@ -133,6 +139,7 @@ class RestaurantCreate extends Component {
       })
       cuisines[newCuisine] = true;
       this.setState({
+        unsavedChanges: true,
         cuisines,
         newCuisine: '',
       });
@@ -143,7 +150,10 @@ class RestaurantCreate extends Component {
     let { cuisines } = this.state,
         { value } = e.target;
     cuisines[value] = !cuisines[value];
-    this.setState({ cuisines });
+    this.setState({
+      unsavedChanges: true,
+      cuisines,
+    });
   }
 
   newMenuItem() {
@@ -152,6 +162,7 @@ class RestaurantCreate extends Component {
     if (newMenuItem.length > 0) {
       menuItems.push(newMenuItem);
       this.setState({
+        unsavedChanges: true,
         menuItems,
         newMenuItem: '',
       });
@@ -162,7 +173,10 @@ class RestaurantCreate extends Component {
     let { menuItems } = this.state;
     let { index } = e.target;
     menuItems.splice(index, 1);
-    this.setState({ menuItems })
+    this.setState({
+      unsavedChanges: true,
+      menuItems,
+    })
   }
 
   saveRestaurant() {
@@ -210,14 +224,16 @@ class RestaurantCreate extends Component {
         <Helmet>
           <title>New Restaurant</title>
         </Helmet>
+        <Prompt
+          when={this.state.unsavedChanges}
+          message={location => `You have unsaved changes. Are you sure you want to leave?`} />
         <Header title="New Restaurant">
           <OptionLink to="/restaurants" onClick={this.saveRestaurant}>Save</OptionLink>
         </Header>
         <Form>
           {foundError && <Error>Please resolve the errors below before saving.</Error>}
           <InputGroup required htmlFor="name" title="Name" large showError={errors.name.length > 0} errorMessage={errors.name}>
-            <TextInput id="name" value={name} placeholder="TGI Fridays" autoComplete="off"
-              inputRef={ref => this.nameInput = ref} tabIndex="1" onChange={this.updateText} />
+            <TextInput id="name" value={name} placeholder="TGI Fridays" autoComplete="off" focused tabIndex="1" onChange={this.updateText} />
           </InputGroup>
           <InputGroup htmlFor="description" title="Description" large>
             <TextArea tabIndex="2" placeholder="Former home of Guy Fieri"
@@ -231,7 +247,7 @@ class RestaurantCreate extends Component {
           </InputGroup>
           <InputGroup required title="Cuisines" large showError={errors.cuisines.length > 0} errorMessage={errors.cuisines}>
             <TextInput id="newCuisine" value={newCuisine} placeholder="Southern, Korean, Thai, ..." padBottom
-              submitText="Add" tabIndex="3" onChange={this.updateText} onSubmit={this.newCuisine} />
+              submitText="Add" tabIndex="3" onChange={e => this.updateText(e, false)} onSubmit={this.newCuisine} />
             <CuisineFilters>
               {Object.keys(cuisines).map((cf, i) => (
                 <AndFilter key={i} value={cf} checked={cuisines[cf]} onChange={this.updateCuisines} large />
@@ -240,7 +256,7 @@ class RestaurantCreate extends Component {
           </InputGroup>
           <InputGroup required title="Menu Items" large showError={errors.menuItems.length > 0} errorMessage={errors.menuItems}>
             <TextInput id="newMenuItem" value={newMenuItem} placeholder="Fried Chicken, Apple Pie, ..." padBottom
-              submitText="Add" tabIndex="4" onChange={this.updateText} onSubmit={this.newMenuItem} />
+              submitText="Add" tabIndex="4" onChange={e => this.updateText(e, false)} onSubmit={this.newMenuItem} />
             <Menu items={menuItems} onRemove={this.removeMenuItem} />
           </InputGroup>
         </Form>

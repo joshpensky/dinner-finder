@@ -25,11 +25,23 @@ class Home extends Component {
       food_options: [],
     }
     
+    this._isMounted = false;
     this.chooseRestaurant = this.chooseRestaurant.bind(this);
   }
 
+  setState(nextState, callback) {
+    if (this._isMounted) {
+      super.setState(nextState, callback)
+    }
+  }
+
   componentDidMount() {
+    this._isMounted = true;
     this.chooseRestaurant().catch(() => Promise.resolve());
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   chooseRestaurant() {

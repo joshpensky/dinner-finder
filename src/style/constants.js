@@ -7,6 +7,7 @@ export const grayBg = '#eee';
 export const grayText = '#6a6a6a';
 export const placeholderColor = '#bbb';
 export const red = '#ff4839';
+export const clearRed = '#ffd5d2';
 export const green = '#007f1f';
 export const clearGreen = '#e4f6d5';
 

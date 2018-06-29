@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import Image from './Image';
 import { borderRadius, grayBg, screenSm, screenMd } from 'style/constants';
 

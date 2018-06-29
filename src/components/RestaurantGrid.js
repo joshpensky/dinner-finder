@@ -161,13 +161,13 @@ class RestaurantGrid extends Component {
           <InputGroup title="Cuisines">
             <CuisineFilters>
               {Object.keys(cuisineFilters).map((cf, i) => (
-                <AndFilter key={i} value={cf} checked={cuisineFilters[cf]} 
+                <AndFilter large key={i} value={cf} checked={cuisineFilters[cf]} 
                   onChange={this.updateCuisineFilter} light />
               ))}
             </CuisineFilters>
           </InputGroup>
           <InputGroup title="Closer to">
-            <UserFilters items={users} onChange={this.updateUserFilter} />
+            <UserFilters large items={users} onChange={this.updateUserFilter} />
           </InputGroup>
         </Filter>
         <Grid>

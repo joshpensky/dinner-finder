@@ -21,6 +21,7 @@ const Loading = styled.div`
   margin-bottom: 6px;
   background-color: ${grayBg};
   border-radius: ${borderRadius};
+  position: relative;
   overflow: hidden;
 
   @media (max-width: ${screenSm}) {

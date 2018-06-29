@@ -62,7 +62,12 @@ class TextInput extends Component {
     this.onChange = this.onChange.bind(this);
     this.onClick = this.onClick.bind(this);
     this.onKeyDown = this.onKeyDown.bind(this);
-    this.inputRef = this.inputRef.bind(this);
+  }
+
+  componentDidMount() {
+    if (this.props.focused) {
+      this.input.focus();
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -74,7 +79,7 @@ class TextInput extends Component {
   onChange(e) {
     this.setState({
       value: e.target.value,
-    }, _ => {
+    }, () => {
       this.props.onChange({
         target: {
           id: this.props.id,
@@ -99,19 +104,12 @@ class TextInput extends Component {
     }
   }
 
-  inputRef(ref) {
-    this.input = ref;
-    if (this.props.inputRef) {
-      this.props.inputRef(ref);
-    }
-  }
-
   render() {
     return (
       <Container padBottom={this.props.padBottom}>
         {this.props.onSubmit && <Button onClick={this.onClick}>{this.props.submitText}</Button>}
         <Input
-          innerRef={ref => this.inputRef(ref)}
+          innerRef={ref => this.input = ref}
           autoComplete={this.props.autoComplete}
           id={this.props.id}
           value={this.state.value}

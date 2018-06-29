@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { toggleModal } from 'actions/modal';
 import PropTypes from 'prop-types';
 import { P } from 'style';
-import { black, blue, borderRadius, grayBg, grayText, maxTextWidth, red, white, systemFont } from 'style/constants';
+import { black, blue, borderRadius, clearRed, grayBg, grayText, maxTextWidth, red, white, systemFont } from 'style/constants';
 import { domainToASCII } from 'url';
 
 const DisablePage = styled.div`
@@ -56,7 +56,7 @@ const CloseButton = styled.div`
   position: absolute;
   top: 0;
   right: 0;
-  background-color: ${red};
+  background-color: ${clearRed};
   border-top-right-radius: ${borderRadius};
   z-index: 1;
   cursor: pointer;
@@ -66,7 +66,7 @@ const CloseButton = styled.div`
     position: absolute;
     top: 50%;
     right: 14px;
-    background-color: ${white};
+    background-color: ${red};
     width: 20px;
     height: 4px;
     transform: translateY(-50%) rotate(45deg);
@@ -77,7 +77,7 @@ const CloseButton = styled.div`
     position: absolute;
     top: 50%;
     right: 22px;
-    background-color: ${white};
+    background-color: ${red};
     width: 4px;
     height: 20px;
     transform: translateY(-50%) rotate(45deg);

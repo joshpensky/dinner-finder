@@ -130,11 +130,12 @@ class TextArea extends Component {
 
   updateMessage(e) {
     const { value } = e.target;
+    const triggerOnChange = value !== this.state.value;
     if (value.trim().length <= 0) {
       this.updateHeight(this.state.defaultHeight);
     }
     this.setState({ value }, () => {
-      this.onChange();
+      if (triggerOnChange) this.onChange();
       const shadowHeight = this.shadowInput.offsetHeight;
       if (shadowHeight !== this.state.height) {
         this.updateHeight(shadowHeight, () => {
