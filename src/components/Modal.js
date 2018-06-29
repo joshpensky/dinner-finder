@@ -5,7 +5,6 @@ import { toggleModal } from 'actions/modal';
 import PropTypes from 'prop-types';
 import { P } from 'style';
 import { black, blue, borderRadius, clearRed, grayBg, grayText, maxTextWidth, red, white, systemFont } from 'style/constants';
-import { domainToASCII } from 'url';
 
 const DisablePage = styled.div`
   content: '';
@@ -32,7 +31,7 @@ const Container = styled.div`
   max-width: ${maxTextWidth};
   border-radius: ${borderRadius};
   background-color: ${white};
-  transform: translate(-50%, -50%) translateY(${props => props.visible ? 0 : -30}px);
+  transform: translate(-50%, ${props => props.visible ? 0 : -30}px);
   transition: 0.2s ease-out;
   opacity: ${props => props.visible ? 1 : 0};
   pointer-events: ${props => props.visible ? 'all' : 'none'};

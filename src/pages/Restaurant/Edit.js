@@ -266,8 +266,11 @@ class RestaurantEdit extends Component {
     return new Promise((resolve, reject) => {
       this.props.setModalContent(
         "Are you sure...",
-        `Are you sure you want to clear the cover photo?`,
+        `Are you sure you want to remove the current cover photo?`,
         [
+          {
+            text: 'Cancel'
+          },
           {
             text: 'Confirm',
             main: true,
@@ -275,9 +278,6 @@ class RestaurantEdit extends Component {
               this.coverPhotoInput.clearSelection()
               resolve();
             }),
-          },
-          {
-            text: 'Cancel'
           },
         ],
       );
@@ -292,8 +292,8 @@ class RestaurantEdit extends Component {
         "Are you sure...",
         `Are you sure you want to delete ${this.state.name}?`,
         [
-          { text: 'Confirm', main: true, action: this.deleteRestaurant },
           { text: 'Cancel' },
+          { text: 'Confirm', main: true, action: this.deleteRestaurant },
         ],
       );
       this.props.toggleModal(true);

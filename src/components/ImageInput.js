@@ -150,6 +150,7 @@ class ImageInput extends Component {
     var div = document.createElement('div');
     this.state = {
       isDragUpload: 'draggable' in div || ('ondragstart' in div && 'ondrop' in div),
+      dropLabel: 'Drag to upload',
       dropActive: false,
       maxSize: (props.maxSize || 5) * BYTE_SIZE,
       selectedFile: null,
@@ -192,6 +193,7 @@ class ImageInput extends Component {
     e.stopPropagation();
     if (!this.state.dropActive) {
       this.setState({
+        dropLabel: 'Drop to upload',
         dropActive: true,
       });
     }
@@ -202,6 +204,7 @@ class ImageInput extends Component {
     e.stopPropagation();
     if (this.state.dropActive) {
       this.setState({
+        dropLabel: 'Drag to upload',
         dropActive: false,
       });
     }
@@ -271,7 +274,7 @@ class ImageInput extends Component {
       <Container>
         <Input id={this.props.id} onChange={this.fileHandler} />
         <Preview source={selectedFilePreview} active={active} circle={this.props.circle} square={this.props.square} innerRef={ref => this.preview = ref}>
-          {this.state.isDragUpload && selectedFilePreview.length === 0 && <Hint active={active}>Drag to upload</Hint>}
+          {this.state.isDragUpload && selectedFilePreview.length === 0 && <Hint active={active}>{this.state.dropLabel}</Hint>}
         </Preview>
         <Buttons>
           <Upload htmlFor={this.props.id}>Upload</Upload>

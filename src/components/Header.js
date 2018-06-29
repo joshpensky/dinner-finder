@@ -23,7 +23,6 @@ const Options = styled.div`
   align-items: flex-end;
   justify-content: flex-end
   margin-bottom: calc(4px - 6px);
-  flex-shrink: 0;
 
   & * {
     margin-left: 6px;

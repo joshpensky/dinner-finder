@@ -58,10 +58,10 @@ const ShadowInput = styled.div`
 class TextArea extends Component {
   constructor(props) {
     super(props);
-    const fontSize = 18,
-          lineHeight = fontSize * 1.2,
-          singleLineHeight = lineHeight + (2 * 10),
-          visibleLines = (this.props.visibleLines || 2) - 1;
+    let fontSize = 18,
+        lineHeight = fontSize * 1.2,
+        singleLineHeight = lineHeight + (2 * 10),
+        visibleLines = (this.props.visibleLines || 2) - 1;
     this.state = {
       value: this.props.value || '',
       fontSize,
