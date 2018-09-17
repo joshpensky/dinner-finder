@@ -10,7 +10,8 @@
     "dev:client": "webpack-dev-server --config webpack.dev.js",
     "dev:server": "NODE_ENV=development nodemon server/index.js --watch server",
     "lint": "eslint *.js",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "heroku-postbuild": "npm install --only=dev"
   },
   "author": "Josh Pensky",
   "license": "ISC",
