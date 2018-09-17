@@ -1,6 +1,6 @@
 # Dinner Finder
 
-A description.
+Helping you and S.O. finally pick a restaurant
 
 - [Dinner Finder](#dinner-finder)
   - [Getting started](#getting-started)
