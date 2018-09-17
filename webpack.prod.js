@@ -39,7 +39,7 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify('production'),
-        API_URL: JSON.stringify(''),
+        API_URL: JSON.stringify('/api/v1'),
       },
     }),
     new CopyWebpackPlugin([
