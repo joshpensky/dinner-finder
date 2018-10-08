@@ -2,7 +2,15 @@ import React, { Component, Fragment } from 'react';
 import styled, { css } from 'styled-components';
 import Helmet from 'react-helmet';
 import { Prompt } from 'react-router-dom';
-import { Header, ImageInput, InputGroup, Menu, TextArea, TextInput, UserFilters } from 'components';
+import {
+  Header,
+  ImageInput,
+  InputGroup,
+  Menu,
+  TextArea,
+  TextInput,
+  UserFilters,
+} from 'components';
 import { AndFilter, OptionLink, P } from 'style';
 import { bottomPagePadding, maxTextWidth, red } from 'style/constants';
 import { api, getFileExtension, titleCase } from 'utils';
@@ -67,26 +75,23 @@ class RestaurantCreate extends Component {
   }
 
   componentDidMount() {
-    const cuisineFetch = api('/cuisines')
-      .then(cuisinesList => {
-        let { cuisines } = this.state;
-        cuisinesList.forEach(c => cuisines[c] = false);
-        this.setState({ cuisines });
-      });
-    const userFetch = api('/users')
-      .then(usersList => {
-        let { users } = this.state;
-        usersList.forEach(u => {
-          users[u.id] = Object.assign(u, {
-            checked: false,
-          });
+    const cuisineFetch = api('/cuisines').then(cuisinesList => {
+      let { cuisines } = this.state;
+      cuisinesList.forEach(c => (cuisines[c] = false));
+      this.setState({ cuisines });
+    });
+    const userFetch = api('/users').then(usersList => {
+      let { users } = this.state;
+      usersList.forEach(u => {
+        users[u.id] = Object.assign(u, {
+          checked: false,
         });
-        this.setState({ users });
       });
-    Promise.all([cuisineFetch, userFetch])
-      .catch(err => {
-        console.error(err);
-      });
+      this.setState({ users });
+    });
+    Promise.all([cuisineFetch, userFetch]).catch(err => {
+      console.error(err);
+    });
   }
 
   updateText(e, unsavedChanges = true) {
@@ -99,7 +104,7 @@ class RestaurantCreate extends Component {
 
   updateUser(e) {
     let { selectedUser, users, errors } = this.state,
-        { value } = e.target;
+      { value } = e.target;
     Object.keys(users).forEach(u => {
       users[u].checked = u === value;
     });
@@ -117,7 +122,7 @@ class RestaurantCreate extends Component {
       unsavedChanges: true,
       errors,
       selectedImage: e.target.file,
-    })
+    });
   }
 
   imageErrorHandler(err) {
@@ -136,7 +141,7 @@ class RestaurantCreate extends Component {
           newCuisine = c;
           return true;
         }
-      })
+      });
       cuisines[newCuisine] = true;
       this.setState({
         unsavedChanges: true,
@@ -148,7 +153,7 @@ class RestaurantCreate extends Component {
 
   updateCuisines(e) {
     let { cuisines } = this.state,
-        { value } = e.target;
+      { value } = e.target;
     cuisines[value] = !cuisines[value];
     this.setState({
       unsavedChanges: true,
@@ -176,24 +181,33 @@ class RestaurantCreate extends Component {
     this.setState({
       unsavedChanges: true,
       menuItems,
-    })
+    });
   }
 
   saveRestaurant() {
     return new Promise((resolve, reject) => {
-      let { name, description, selectedUser, selectedImage, cuisines, menuItems } = this.state;
+      let {
+        name,
+        description,
+        selectedUser,
+        selectedImage,
+        cuisines,
+        menuItems,
+      } = this.state;
       name = name.trim();
       description = description.trim();
       cuisines = Object.keys(cuisines).filter(c => cuisines[c]);
       var errors = Object.assign({}, this.state.errors);
-      let foundError = (name.length === 0) || false;
-      errors.name = (name.length === 0) ? 'You must enter a name.' : '';
-      foundError = (selectedUser.length === 0) || foundError;
-      errors.user = (selectedUser.length === 0) ? 'You must select a user.' : '';
-      foundError = (cuisines.length < 1) || foundError;
-      errors.cuisines = (cuisines.length < 1) ? 'You must select at least one cuisine.' : '';
-      foundError = (menuItems.length < 1) || foundError;
-      errors.menuItems = (menuItems.length < 1) ? 'You must enter at least one menu item.' : '';
+      let foundError = name.length === 0 || false;
+      errors.name = name.length === 0 ? 'You must enter a name.' : '';
+      foundError = selectedUser.length === 0 || foundError;
+      errors.user = selectedUser.length === 0 ? 'You must select a user.' : '';
+      foundError = cuisines.length < 1 || foundError;
+      errors.cuisines =
+        cuisines.length < 1 ? 'You must select at least one cuisine.' : '';
+      foundError = menuItems.length < 1 || foundError;
+      errors.menuItems =
+        menuItems.length < 1 ? 'You must enter at least one menu item.' : '';
       errors.coverPhoto = '';
       if (errors !== this.state.errors) {
         this.setState({ foundError, errors });
@@ -203,22 +217,43 @@ class RestaurantCreate extends Component {
       formData.append('name', name);
       formData.append('description', description);
       if (selectedImage !== null) {
-        formData.append('cover_photo', selectedImage, name + '.' + getFileExtension(selectedImage.name));
+        formData.append(
+          'cover_photo',
+          selectedImage,
+          name + '.' + getFileExtension(selectedImage.name)
+        );
       }
       formData.append('user', selectedUser);
       formData.append('cuisines', JSON.stringify(cuisines));
       formData.append('food_options', JSON.stringify(menuItems));
       api('/restaurants', 'POST', formData)
-        .then(data => resolve(`/restaurants/${data.id}`))
+        .then(data =>
+          this.setState(
+            {
+              unsavedChanges: false,
+            },
+            () => resolve(`/restaurants/${data.id}`)
+          )
+        )
         .catch(err => {
           console.log(err);
-          reject()
+          reject();
         });
     });
   }
 
   render() {
-    const { foundError, errors, name, description, users, newCuisine, cuisines, newMenuItem, menuItems } = this.state;
+    const {
+      foundError,
+      errors,
+      name,
+      description,
+      users,
+      newCuisine,
+      cuisines,
+      newMenuItem,
+      menuItems,
+    } = this.state;
     return (
       <Fragment>
         <Helmet>
@@ -226,37 +261,115 @@ class RestaurantCreate extends Component {
         </Helmet>
         <Prompt
           when={this.state.unsavedChanges}
-          message={location => `You have unsaved changes. Are you sure you want to leave?`} />
+          message={location =>
+            `You have unsaved changes. Are you sure you want to leave?`
+          }
+        />
         <Header title="New Restaurant">
-          <OptionLink to="/restaurants" onClick={this.saveRestaurant}>Save</OptionLink>
+          <OptionLink to="/restaurants" onClick={this.saveRestaurant}>
+            Save
+          </OptionLink>
         </Header>
         <Form>
-          {foundError && <Error>Please resolve the errors below before saving.</Error>}
-          <InputGroup required htmlFor="name" title="Name" large showError={errors.name.length > 0} errorMessage={errors.name}>
-            <TextInput id="name" value={name} placeholder="TGI Fridays" autoComplete="off" focused tabIndex="1" onChange={this.updateText} />
+          {foundError && (
+            <Error>Please resolve the errors below before saving.</Error>
+          )}
+          <InputGroup
+            required
+            htmlFor="name"
+            title="Name"
+            large
+            showError={errors.name.length > 0}
+            errorMessage={errors.name}
+          >
+            <TextInput
+              id="name"
+              value={name}
+              placeholder="TGI Fridays"
+              autoComplete="off"
+              focused
+              tabIndex="1"
+              onChange={this.updateText}
+            />
           </InputGroup>
           <InputGroup htmlFor="description" title="Description" large>
-            <TextArea tabIndex="2" placeholder="Former home of Guy Fieri"
-              id="description" value={description} onChange={this.updateText} />
+            <TextArea
+              tabIndex="2"
+              placeholder="Former home of Guy Fieri"
+              id="description"
+              value={description}
+              onChange={this.updateText}
+            />
           </InputGroup>
-          <InputGroup title="Cover Photo" large hint="Maximum image upload size is 2MB" showError={errors.coverPhoto.length > 0} errorMessage={errors.coverPhoto}>
-            <ImageInput id="imageInput" maxSize={2} onChange={this.updateImage} onError={this.imageErrorHandler} />
+          <InputGroup
+            title="Cover Photo"
+            large
+            hint="Maximum image upload size is 2MB"
+            showError={errors.coverPhoto.length > 0}
+            errorMessage={errors.coverPhoto}
+          >
+            <ImageInput
+              id="imageInput"
+              maxSize={2}
+              onChange={this.updateImage}
+              onError={this.imageErrorHandler}
+            />
           </InputGroup>
-          <InputGroup required title="Closer to" large showError={errors.user.length > 0} errorMessage={errors.user}>
+          <InputGroup
+            required
+            title="Closer to"
+            large
+            showError={errors.user.length > 0}
+            errorMessage={errors.user}
+          >
             <UserFilters large items={users} onChange={this.updateUser} />
           </InputGroup>
-          <InputGroup required title="Cuisines" large showError={errors.cuisines.length > 0} errorMessage={errors.cuisines}>
-            <TextInput id="newCuisine" value={newCuisine} placeholder="Southern, Korean, Thai, ..." padBottom
-              submitText="Add" tabIndex="3" onChange={e => this.updateText(e, false)} onSubmit={this.newCuisine} />
+          <InputGroup
+            required
+            title="Cuisines"
+            large
+            showError={errors.cuisines.length > 0}
+            errorMessage={errors.cuisines}
+          >
+            <TextInput
+              id="newCuisine"
+              value={newCuisine}
+              placeholder="Southern, Korean, Thai, ..."
+              padBottom
+              submitText="Add"
+              tabIndex="3"
+              onChange={e => this.updateText(e, false)}
+              onSubmit={this.newCuisine}
+            />
             <CuisineFilters>
               {Object.keys(cuisines).map((cf, i) => (
-                <AndFilter key={i} value={cf} checked={cuisines[cf]} onChange={this.updateCuisines} large />
+                <AndFilter
+                  key={i}
+                  value={cf}
+                  checked={cuisines[cf]}
+                  onChange={this.updateCuisines}
+                  large
+                />
               ))}
             </CuisineFilters>
           </InputGroup>
-          <InputGroup required title="Menu Items" large showError={errors.menuItems.length > 0} errorMessage={errors.menuItems}>
-            <TextInput id="newMenuItem" value={newMenuItem} placeholder="Fried Chicken, Apple Pie, ..." padBottom
-              submitText="Add" tabIndex="4" onChange={e => this.updateText(e, false)} onSubmit={this.newMenuItem} />
+          <InputGroup
+            required
+            title="Menu Items"
+            large
+            showError={errors.menuItems.length > 0}
+            errorMessage={errors.menuItems}
+          >
+            <TextInput
+              id="newMenuItem"
+              value={newMenuItem}
+              placeholder="Fried Chicken, Apple Pie, ..."
+              padBottom
+              submitText="Add"
+              tabIndex="4"
+              onChange={e => this.updateText(e, false)}
+              onSubmit={this.newMenuItem}
+            />
             <Menu items={menuItems} onRemove={this.removeMenuItem} />
           </InputGroup>
         </Form>
